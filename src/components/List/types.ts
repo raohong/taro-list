@@ -50,9 +50,4 @@ export interface SizeAndPositionDataItem {
   offset: number;
 }
 
-export type LoadStatus =
-  | 'loading'
-  | 'ended'
-  | 'loadmore'
-  | 'fulfilled'
-  | 'rejected';
+export type Vector = [number, number];

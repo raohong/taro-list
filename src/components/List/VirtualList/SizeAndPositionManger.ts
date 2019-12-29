@@ -3,7 +3,7 @@ import {
   EstimatedSizeGetter,
   ALIGN,
   SizeAndPositionDataItem
-} from '../types';
+} from './types';
 
 interface SizeAndPositionManagerOptions {
   itemCount: number;

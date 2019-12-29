@@ -49,5 +49,3 @@ export interface SizeAndPositionDataItem {
   size: number;
   offset: number;
 }
-
-export type Vector = [number, number];

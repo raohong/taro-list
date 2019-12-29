@@ -7,7 +7,7 @@ import {
   ItemSize,
   sizeProp,
   DEFAULT_ITEMSIZE
-} from '../types';
+} from './types';
 
 export const getItemSizeGetter = (
   itemSize: ItemSize,

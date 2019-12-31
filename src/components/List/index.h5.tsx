@@ -1,43 +1,10 @@
 import Taro, { PureComponent } from '@tarojs/taro';
 import PropTypes from 'prop-types';
-import omit from 'omit.js';
 import { View, ScrollView } from '@tarojs/components';
 
-import VirtualList, { VirtualListProps } from './VirtualList';
-import './index.h5.less';
-
-export type ExcludeProps =
-  | 'width'
-  | 'height'
-  | 'className'
-  | 'style'
-  | 'dynamic'
-  | 'scrollDirection'
-  | 'scrollOffset'
-  | 'scrollToIndex';
-
-export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
-  height?: number;
-  className?: string;
-  style?: React.CSSProperties;
-  distanceToRefresh?: number;
-  damping?: number;
-  refreshing?: boolean;
-  onRefresh?: (cb: () => void) => void;
-  onLoadmore?: () => void;
-  custom?: boolean;
-  virtual?: boolean;
-}
-
-enum REFRESH_STATUS {
-  NONE = 'none',
-  // 拖动小于 刷新距离
-  PULL = 'pull',
-  // 拖动大于 刷新距离
-  ACTIVE = 'active',
-  // 释放
-  RELEASE = 'release'
-}
+import VirtualList from './VirtualList';
+import { REFRESH_STATUS, ListProps, MAX_REFRESHING_TIME } from './types';
+import './index.less';
 
 interface ListState {
   containerSize: number;
@@ -45,8 +12,6 @@ interface ListState {
   draging: boolean;
   offset: number;
 }
-
-const MAX_REFRESHING_TIME = 1000 * 10;
 
 const opts = {
   passive: false
@@ -83,7 +48,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   private initialY = 0;
   private virtualListRef = Taro.createRef<VirtualList>();
 
-  private domId = `zyouh-list__id-${(TaroList.index = TaroList.index++)}`;
+  private domId = `zyouh-list__id-${TaroList.index++}`;
 
   constructor(props: ListProps) {
     super(props);
@@ -196,6 +161,8 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
           status: REFRESH_STATUS.NONE
         });
         this.reset();
+      } else {
+        this.updateOffset(this.props.distanceToRefresh!)
       }
     } else {
       this.reset();
@@ -287,7 +254,11 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       custom,
       distanceToRefresh,
       virtual,
-      ...rest
+      itemCount,
+      itemSize,
+      estimatedSize,
+      stickyIndices,
+      overscan
     } = props;
     const { draging, status, offset, containerSize } = this.state;
 
@@ -305,14 +276,6 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       transform: `translate3d(0, ${-distanceToRefresh! +
         Math.min(offset, distanceToRefresh!)}px, 0)`
     };
-
-    const virtualListProps = omit(rest, [
-      'children',
-      'damping',
-      'onLoadmore',
-      'onRefresh',
-      'refreshing'
-    ]);
 
     return (
       <View style={style} className={cls}>
@@ -342,7 +305,11 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
                 width={width}
                 ref={this.virtualListRef}
                 height={containerSize}
-                {...virtualListProps}
+                estimatedSize={estimatedSize}
+                itemCount={itemCount}
+                itemSize={itemSize}
+                stickyIndices={stickyIndices}
+                overscan={overscan}
               >
                 {props.children}
               </VirtualList>

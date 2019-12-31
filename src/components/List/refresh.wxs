@@ -1,0 +1,185 @@
+var REFRESH_STATUS = {
+  NONE: 'none',
+  PULL: 'pull',
+  ACTIVE: 'active',
+  RELEASE: 'release'
+};
+var _map = {};
+
+function getState(id) {
+  if (!_map[id]) {
+    _map[id] = {
+      inititalY: 0,
+      draging: false,
+      offset: 0,
+      status: REFRESH_STATUS.NONE
+    };
+  }
+
+  return _map[id];
+}
+
+function easing(offset, damping, distanceToRefresh) {
+  return offset > distanceToRefresh
+    ? Math.min(damping, offset / (1 + Math.abs(offset) * 0.002))
+    : offset;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(value, max));
+}
+
+function handleTouchStart(evt, ownerInstance) {
+  var body = ownerInstance.selectComponent('.zyouh-list__body');
+  var config = body.getDataset();
+  var id = config.id;
+  var state = getState(id);
+
+  state.initialY = evt.touches[0].clientY;
+
+}
+
+function handleTouchMove(evt, ownerInstance) {
+  var cy = evt.touches[0].clientY;
+  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator');
+  var body = ownerInstance.selectComponent('.zyouh-list__body');
+  var config = body.getDataset().config;
+  var damping = config.damping;
+  var id = config.id;
+  var distanceToRefresh = config.distanceToRefresh;
+  var state = getState(id);
+
+
+  // 小程序中只有不可滚动的时候才会触发 touchmove 所以这里不进行是否有滚动判断
+
+  // 当前值不能超过初始值
+  if (cy < state.initialY && state.offset < 1) {
+    return;
+  }
+
+  if (!state.draging) {
+    state.draging = true;
+    state.initialY =
+      state.status === REFRESH_STATUS.RELEASE ? cy - state.offset : cy;
+    body.removeClass('zyouh-list__body-refreshing');
+
+    // 释放状态 不能去除动画
+    if (state.status !== REFRESH_STATUS.RELEASE) {
+      indicator.removeClass('flashing');
+    }
+  }
+
+  var deltaY = easing(cy - state.initialY, damping, distanceToRefresh);
+  // 设置偏移值
+  updateOffset(config, deltaY, body, indicator);
+
+  // 刷新释放后状态不变 仅改变 offset
+  if (state.status === REFRESH_STATUS.RELEASE) {
+    return;
+  }
+
+  if (deltaY < distanceToRefresh) {
+    if (state.status !== REFRESH_STATUS.PULL) {
+      state.status = REFRESH_STATUS.PULL;
+    }
+
+    // 恢复 indicator 的静止
+  } else {
+    if (state.status !== REFRESH_STATUS.ACTIVE) {
+      state.status = REFRESH_STATUS.ACTIVE;
+    }
+  }
+}
+
+function handleTouchEnd(evt, ownerInstance) {
+  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator');
+  var body = ownerInstance.selectComponent('.zyouh-list__body');
+  var config = body.getDataset().config;
+  var id = config.id;
+  var distanceToRefresh = config.distanceToRefresh;
+  var state = getState(id);
+
+  if(state.offset === 0) {
+    return;
+  }
+
+  if (state.draging) {
+    state.draging = false;
+    body.addClass('zyouh-list__body-refreshing');
+  }
+
+  if (state.status === REFRESH_STATUS.ACTIVE) {
+    state.initialY = 0;
+    setRefresh(config, body, indicator, ownerInstance);
+
+    // 正在刷新中 此时拖动结束后 如果小于 distanceToRefresh 则结束刷新
+  } else if (state.status === REFRESH_STATUS.RELEASE) {
+    if (state.offset < distanceToRefresh) {
+      state.status = REFRESH_STATUS.NONE;
+      reset(config, body, indicator);
+    } else {
+      updateOffset(config, config.distanceToRefresh, body, indicator);
+    }
+  } else {
+    reset(config, body, indicator);
+  }
+}
+
+function reset(config, body, indicator) {
+  var id = config.id;
+  var state = getState(id);
+
+  state.initialY = 0;
+  updateOffset(config, 0, body, indicator);
+}
+
+function updateOffset(config, deltaY, body, indicator) {
+  var id = config.id;
+  var distanceToRefresh = config.distanceToRefresh;
+  var state = getState(id);
+
+  state.offset = deltaY;
+  body.setStyle({
+    transform: 'translate3d(0, ' + deltaY + 'px, 0)'
+  });
+  indicator.setStyle({
+    transform:
+      'translate3d(0, ' + clamp(deltaY, 0, distanceToRefresh) + 'px, 0)'
+  });
+}
+
+function setRefresh(config, body, indicator, ownerInstance) {
+  var id = config.id;
+  var state = getState(id);
+
+  state.status = REFRESH_STATUS.RELEASE;
+  if (!indicator.hasClass('flashing')) {
+    indicator.addClass('flashing');
+  }
+  updateOffset(config, config.distanceToRefresh, body, indicator);
+  // ownerInstance.callMethod('setRefresh');
+}
+
+function triggerRefresh(refreshing, oldValue, ownerInstance, instance) {
+  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator');
+  var body = ownerInstance.selectComponent('.zyouh-list__body');
+  var config = body.getDataset().config;
+  var state = getState(config.id);
+
+  if (state.draging) {
+    return;
+  }
+
+  if (refreshing) {
+    setRefresh(config, body, indicator, ownerInstance);
+  } else {
+    reset(config, body, indicator);
+  }
+}
+
+module.exports = {
+  triggerRefresh: triggerRefresh,
+  handleTouchEnd: handleTouchEnd,
+  handleTouchStart: handleTouchStart,
+  handleTouchMove: handleTouchMove
+};

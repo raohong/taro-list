@@ -1,6 +1,9 @@
+// eslint-disable-next-line import/no-commonjs
+const { join } = require('path');
+
 const config = {
-  projectName: 'taro-virtual-list',
-  date: '2019-12-22',
+  projectName: 'taro-list',
+  date: '2019-12-30',
   designWidth: 750,
   deviceRatio: {
     '640': 2.34 / 2,
@@ -9,22 +12,53 @@ const config = {
   },
   sourceRoot: 'src',
   outputRoot: 'dist',
+
   plugins: {
     babel: {
       sourceMap: true,
       presets: [
-        ['env', {
-          modules: false
-        }]
+        [
+          'env',
+          {
+            modules: false
+          }
+        ]
       ],
       plugins: [
         'transform-decorators-legacy',
         'transform-class-properties',
         'transform-object-rest-spread'
       ]
+    },
+    uglify: {
+      enable: true,
+      config: {
+        // 配置项同 https://github.com/mishoo/UglifyJS2#minify-options
+      }
+    },
+    csso: {
+      enable: true,
+      config: {
+        // 配置项同 https://github.com/css/csso#minifysource-options
+      }
     }
   },
-  defineConstants: {
+  alias: {
+    '@': join(__dirname, '..', 'src')
+  },
+  defineConstants: {},
+  copy: {
+    patterns: [
+      {
+        from: 'src/components/List/refresh.wxs',
+        to: 'dist/components/List/refresh.wxs'
+      },
+      {
+        from: 'src/components/List/index.template.wxml',
+        to: 'dist/components/List/index.template.wxml'
+      }
+    ],
+    options: {}
   },
   weapp: {
     module: {
@@ -32,23 +66,17 @@ const config = {
         autoprefixer: {
           enable: true,
           config: {
-            browsers: [
-              'last 3 versions',
-              'Android >= 4.1',
-              'ios >= 8'
-            ]
+            browsers: ['last 1 versions']
           }
         },
         pxtransform: {
           enable: true,
-          config: {
-
-          }
+          config: {}
         },
         url: {
           enable: true,
           config: {
-            limit: 10240 // 设定转换尺寸上限
+            limit: 1024 * 8 // 设定转换尺寸上限
           }
         },
         cssModules: {
@@ -63,17 +91,16 @@ const config = {
   },
   h5: {
     publicPath: '/',
-    staticDirectory: 'static',
+    staticDirectory: 'assets',
+    webpack: {
+      alisa: {}
+    },
     module: {
       postcss: {
         autoprefixer: {
           enable: true,
           config: {
-            browsers: [
-              'last 3 versions',
-              'Android >= 4.1',
-              'ios >= 8'
-            ]
+            browsers: ['last 3 versions', 'Android >= 4.1', 'ios >= 8']
           }
         },
         cssModules: {
@@ -86,11 +113,38 @@ const config = {
       }
     }
   }
+};
+
+if (process.env.TARO_BUILD_TYPE === 'ui') {
+  Object.assign(config.h5, {
+    enableSourceMap: false,
+    enableExtract: false,
+    enableDll: false
+  });
+  config.h5.webpackChain = chain => {
+    chain.plugins.delete('htmlWebpackPlugin');
+    chain.plugins.delete('addAssetHtmlWebpackPlugin');
+    chain.merge({
+      output: {
+        path: path.join(process.cwd(), 'dist', 'h5'),
+        filename: 'index.js',
+        libraryTarget: 'umd',
+        library: 'taro-ui-sample'
+      },
+      externals: {
+        nervjs: 'commonjs2 nervjs',
+        classnames: 'commonjs2 classnames',
+        '@tarojs/components': 'commonjs2 @tarojs/components',
+        '@tarojs/taro-h5': 'commonjs2 @tarojs/taro-h5',
+        weui: 'commonjs2 weui'
+      }
+    });
+  };
 }
 
-module.exports = function (merge) {
+module.exports = function(merge) {
   if (process.env.NODE_ENV === 'development') {
-    return merge({}, config, require('./dev'))
+    return merge({}, config, require('./dev'));
   }
-  return merge({}, config, require('./prod'))
-}
+  return merge({}, config, require('./prod'));
+};

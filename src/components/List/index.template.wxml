@@ -1,0 +1,2 @@
+  <view style="display:none" prop="{{refreshing}}" change:prop="{{refresh.triggerRefresh}}">
+  </view>

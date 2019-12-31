@@ -53,6 +53,7 @@ export default () => {
 
   const { windowHeight } = Taro.getSystemInfoSync();
 
+
   return (
     <View
       style={{
@@ -65,7 +66,6 @@ export default () => {
         onLoadmore={fetch}
         height={windowHeight}
         itemCount={list.length}
-        virtual
       >
         {pageRef.current === 1 && loading ? 'loading...' : null}
         {list.map((item, index) => (
@@ -107,6 +107,7 @@ export default () => {
         ) : null}
         {ened ? <View style={{ textAlign: 'center' }}>没有更多了</View> : null}
       </List>
+
     </View>
   );
 };

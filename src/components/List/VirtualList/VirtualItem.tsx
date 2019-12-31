@@ -29,11 +29,12 @@ export default class VirtualItem extends Component<VirtualItemProps> {
   private weappOb: any;
 
   componentDidMount() {
-    if (!this.context) {
+    if (!this.context || !this.context.registerUpdateCallback) {
       return;
     }
 
     const { registerUpdateCallback } = this.context as VirtualListContext;
+
     this.removeCb = registerUpdateCallback(this.getSize);
   }
 
@@ -100,7 +101,7 @@ export default class VirtualItem extends Component<VirtualItemProps> {
   render() {
     const { style, index } = this.props;
 
-    if (!this.context) {
+    if (!this.context || !this.context.registerUpdateCallback) {
       return this.props.children;
     }
 

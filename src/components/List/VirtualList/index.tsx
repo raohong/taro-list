@@ -1,4 +1,4 @@
-import Taro, { PureComponent } from '@tarojs/taro';
+import Taro, { PureComponent, chooseInvoiceTitle } from '@tarojs/taro';
 import { View } from '@tarojs/components';
 
 import {
@@ -10,12 +10,22 @@ import {
   DEFAULT_ZINDEX,
   CellCacheItem,
   positionProp,
-  DEFAULT_ITEMSIZE
+  DEFAULT_ITEMSIZE,
+  DEFAULT_OVERSCAN
 } from './types';
 import SizeAndPositionManager from './SizeAndPositionManger';
-import { getItemSizeGetter, getEstimatedGetter } from './utils';
+import {
+  getItemSizeGetter,
+  getEstimatedGetter,
+  normalizeStyle,
+  normalizeValue
+} from './utils';
 import CellCache from './CellCache';
 import { VirtualListContext, VirutalListContext } from './context';
+import {
+  VirutalListDataManager,
+  VirutalListItemData
+} from './VirutalListDataManager';
 
 const STYLE_INNER: React.CSSProperties = {
   position: 'relative'
@@ -38,13 +48,18 @@ const STYLE_ITEM: {
 export interface VirtualListProps {
   width: number | string;
   height: number | string;
+  // 这里保留 state 里的 offset
+  onOffsetChange: (offset: number) => void;
   itemCount: number;
   itemSize?: ItemSize;
+  dynamic?: boolean;
   estimatedSize?: number;
   stickyIndices?: number[];
   overscan?: number;
   align?: ALIGN;
   scrollDirection?: DIRECTION;
+  scrollToIndex?: number;
+  dataManager: VirutalListDataManager;
 }
 
 type ItemStylePosition = 'sticky' | 'absolute';
@@ -72,24 +87,27 @@ export class VirtualList extends PureComponent<
     align: ALIGN.Auto,
     estimatedSize: DEFAULT_ITEMSIZE,
     itemSize: DEFAULT_ITEMSIZE,
-    overscan: 3
-  };
-  static index = 0;
-
-  static getEventName = () => {
-    return `VIRTUAL_ITEM_UPDATE-${VirtualList.index++}`;
+    overscan: DEFAULT_OVERSCAN,
+    dynamic: true
   };
 
-  private eventName = VirtualList.getEventName();
   private cellCache: CellCache<CellCacheItem>;
   private delayUpdateTimer: number | null = null;
   private styleCache: Record<number, ItemStyle> = {};
   private sizeAndPositionManager: SizeAndPositionManager;
+  private isMounted = false;
+  private needUpdate = true;
 
   constructor(props: VirtualListProps) {
     super(props);
 
-    const { itemCount, itemSize, estimatedSize, scrollDirection } = props;
+    const {
+      itemCount,
+      itemSize,
+      estimatedSize,
+      scrollDirection,
+      dynamic
+    } = props;
 
     this.cellCache = new CellCache<CellCacheItem>();
     const estimatedSizeGetter = getEstimatedGetter(estimatedSize!, itemSize!);
@@ -97,9 +115,9 @@ export class VirtualList extends PureComponent<
       itemCount: itemCount!,
       itemSizeGetter: getItemSizeGetter(
         itemSize!,
-        this.cellCache,
-        scrollDirection!,
-        estimatedSizeGetter
+        dynamic ? this.cellCache : undefined,
+        dynamic ? scrollDirection! : undefined,
+        dynamic ? estimatedSizeGetter : undefined
       ),
       estimatedSizeGetter
     });
@@ -111,12 +129,19 @@ export class VirtualList extends PureComponent<
   }
 
   componentWillReceiveProps(nextProps: VirtualListProps) {
+    if (!this.isMounted) {
+      return;
+    }
+
     const {
       itemCount,
       itemSize,
       estimatedSize,
       scrollDirection,
-      stickyIndices
+      stickyIndices,
+      dynamic,
+      scrollToIndex,
+      onOffsetChange
     } = nextProps;
     const prevProps = this.props;
 
@@ -130,6 +155,7 @@ export class VirtualList extends PureComponent<
       this.sizeAndPositionManager.updateConfig({
         itemCount
       });
+      this.needUpdate = true;
     }
 
     if (
@@ -141,12 +167,13 @@ export class VirtualList extends PureComponent<
       this.sizeAndPositionManager.updateConfig({
         itemSizeGetter: getItemSizeGetter(
           itemSize!,
-          this.cellCache,
-          scrollDirection!,
-          estimatedSizeGetter
+          dynamic ? this.cellCache : undefined,
+          dynamic ? scrollDirection! : undefined,
+          dynamic ? estimatedSizeGetter : undefined
         ),
         estimatedSizeGetter
       });
+      this.needUpdate = true;
     }
 
     if (
@@ -155,24 +182,48 @@ export class VirtualList extends PureComponent<
       (Array.isArray(stickyIndices) &&
         stickyIndices !== prevProps.stickyIndices)
     ) {
+      this.needUpdate = true;
       this.recomputeSizes();
     }
+
+    if (
+      typeof scrollToIndex === 'number' &&
+      scrollToIndex !== this.props.scrollToIndex
+    ) {
+      this.needUpdate = true;
+      onOffsetChange(this.getUpdatedScrollOffset(scrollToIndex, nextProps));
+    }
+
+
+  }
+
+  componentDidMount() {
+    this.isMounted = true;
+
+    const { dataManager } = this.props;
+
+    // @ts-ignore
+    dataManager.__setUpdater(this.update);
+
+  }
+
+  componentDidUpdate(_: VirtualListProps, prevState: VirtualListState) {
+    this.needUpdate = this.needUpdate || prevState.offset !== this.state.offset;
+
+    if (!this.needUpdate) {
+      return;
+    }
+
+
+    // @ts-ignore
+    this.props.dataManager._nextTickUpdate()
+
+    this.needUpdate = false;
   }
 
   componentWillUnmount() {
     if (this.delayUpdateTimer !== null) {
       clearTimeout(this.delayUpdateTimer);
-    }
-  }
-
-  componentDidUpdate(prevProps: VirtualListProps) {
-    const { scrollDirection } = this.props;
-
-    if (
-      this.props[sizeProp[scrollDirection!]] !==
-      prevProps[sizeProp[scrollDirection!]]
-    ) {
-      Taro.eventCenter.trigger(this.eventName);
     }
   }
 
@@ -182,6 +233,45 @@ export class VirtualList extends PureComponent<
         offset: scrollOffset
       });
     }
+  };
+
+  update = (data: any[]) => {
+    const items: VirutalListItemData[] = [];
+    const { overscan, stickyIndices } = this.props;
+
+    const { start, end } = this.sizeAndPositionManager.getVisibleRange({
+      containerSize: this.getContainerSize(),
+      currentOffset: this.state.offset,
+      overscan: overscan!
+    });
+
+
+    console.log('XXXX update')
+
+    if (start !== undefined && end !== undefined) {
+      if (Array.isArray(stickyIndices)) {
+        stickyIndices.forEach(i =>
+          items.push({
+            index: i,
+            style: this.getStyle(i, true),
+            item: data[i]
+          })
+        );
+      }
+
+      for (let i = start; i <= end; i++) {
+        if (Array.isArray(stickyIndices) && stickyIndices.includes(i)) {
+          continue;
+        }
+        items.push({
+          index: i,
+          style: this.getStyle(i),
+          item: data[i]
+        });
+      }
+    }
+
+    return items;
   };
 
   recomputeSizes = (index: number = 0) => {
@@ -197,6 +287,7 @@ export class VirtualList extends PureComponent<
 
   delayForceUpdate = () => {
     if (this.delayUpdateTimer) {
+      this.delayUpdateTimer = 0;
       clearTimeout(this.delayUpdateTimer);
     }
 
@@ -207,24 +298,22 @@ export class VirtualList extends PureComponent<
   };
 
   render() {
-    const { width, height, scrollDirection } = this.props;
+    const { width, height, scrollDirection, dynamic } = this.props;
 
     const totalSize = this.sizeAndPositionManager.getTotalSize();
-
-    const outterStyle = {
+    const outterStyle = normalizeStyle({
       width,
       height
-    };
+    });
 
     const innerStyle = {
       ...STYLE_INNER,
-      [sizeProp[scrollDirection!]]: totalSize
+      [sizeProp[scrollDirection!]]: normalizeValue(totalSize)
     };
 
     const contextValue: VirtualListContext = {
       onResize: this.recomputeDynamicSizes,
-      getStyle: this.getVirtualItemStyle,
-      registerUpdateCallback: this.registerUpdateCallback
+      dynamic: !!dynamic
     };
 
     return (
@@ -242,38 +331,8 @@ export class VirtualList extends PureComponent<
     return props[sizeProp[scrollDirection!]];
   }
 
-  private registerUpdateCallback = (cb: () => void) => {
-    Taro.eventCenter.on(this.eventName, cb);
-
-    return () => Taro.eventCenter.off(this.eventName, cb);
-  };
-
-  private getVirtualItemStyle = (index: number): null | ItemStyle => {
-    const { stickyIndices, overscan } = this.props;
-    const { offset } = this.state;
-
-    const { start, end } = this.sizeAndPositionManager.getVisibleRange({
-      currentOffset: offset,
-      overscan: overscan!,
-      containerSize: this.getContainerSize()
-    });
-
-    if (start === undefined || end === undefined) {
-      return null;
-    }
-
-    if (index < start || index > end) {
-      return null;
-    }
-
-    return this.getStyle(
-      index,
-      Array.isArray(stickyIndices) && stickyIndices.includes(index)
-    );
-  };
-
   private getStyle(index: number, sticky?: boolean) {
-    const { scrollDirection } = this.props;
+    const { scrollDirection, dynamic } = this.props;
     const style = this.styleCache[index];
 
     if (style) {
@@ -284,7 +343,10 @@ export class VirtualList extends PureComponent<
       index
     );
     const cellCacheItem = this.cellCache.get(index);
-    const size = (cellCacheItem && cellCacheItem[scrollDirection!]) || 'auto';
+    const size = dynamic
+      ? (cellCacheItem && cellCacheItem[scrollDirection!]) || 'auto'
+      : sizeAndPosition.size;
+
     const itemStyle: ItemStyle = sticky
       ? {
           ...STYLE_ITEM,
@@ -300,9 +362,21 @@ export class VirtualList extends PureComponent<
           zIndex: 'auto'
         };
 
-    this.styleCache[index] = itemStyle;
+    // @ts-ignore
+    this.styleCache[index] = normalizeStyle(itemStyle);
 
-    return itemStyle;
+    return this.styleCache[index];
+  }
+
+  private getUpdatedScrollOffset(scrollToIndex: number, props = this.props) {
+    const { align } = props;
+
+    return this.sizeAndPositionManager.getUpdatedOffsetForIndex({
+      align: align!,
+      containerSize: this.getContainerSize(props),
+      targetIndex: scrollToIndex,
+      currentOffset: (this.state && this.state.offset) || 0
+    });
   }
 }
 

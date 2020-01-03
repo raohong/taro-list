@@ -1,4 +1,4 @@
-import Taro, { Component, ENV_TYPE } from '@tarojs/taro';
+import Taro, { PureComponent, ENV_TYPE } from '@tarojs/taro';
 import PropTypes from 'prop-types';
 import { View } from '@tarojs/components';
 import ResizeObsever from 'resize-observer-polyfill';
@@ -7,10 +7,16 @@ import { VirutalListContext, VirtualListContext } from './context';
 export interface VirtualItemProps {
   index: number;
   style?: React.CSSProperties;
+  className?: React.CSSProperties;
+  id?: string;
 }
 
-export default class VirtualItem extends Component<VirtualItemProps> {
+export default class VirtualItem extends PureComponent<VirtualItemProps> {
   static contextType = VirutalListContext;
+
+  static options = {
+    addGlobalClass: true
+  };
 
   static propTypes = {
     index: PropTypes.number.isRequired,
@@ -21,51 +27,50 @@ export default class VirtualItem extends Component<VirtualItemProps> {
     style: {}
   };
 
-  static index = 0;
-  private removeCb: () => void;
-  private id = `taro-list-virutal-item-${(VirtualItem.index = ++VirtualItem.index)}`;
+
   private rootNode: HTMLDivElement;
   private ob: ResizeObsever | null = null;
-  private weappOb: any;
 
   componentDidMount() {
-    if (!this.context || !this.context.registerUpdateCallback) {
-      return;
+    const { dynamic } = this.context as VirtualListContext;
+    if (Taro.getEnv() === ENV_TYPE.WEAPP && dynamic) {
+      this.handleWeappGetSize();
     }
-
-    const { registerUpdateCallback } = this.context as VirtualListContext;
-
-    this.removeCb = registerUpdateCallback(this.getSize);
   }
 
   componentWillUnmount() {
-    if (this.removeCb) {
-      this.removeCb();
+    if (Taro.getEnv() === ENV_TYPE.WEB && this.ob) {
+      this.ob.disconnect();
     }
   }
 
-  getSize = () => {
-    const { onResize } = this.context as VirtualListContext;
+  saveRef = ref => {
+    const { dynamic } = this.context as VirtualListContext;
+
+    if (Taro.getEnv() === ENV_TYPE.WEB && ref && dynamic) {
+      requestAnimationFrame(() => {
+        this.handleWEBObserver(ref._rendered && ref._rendered.dom);
+      });
+    }
+  };
+
+  handleWeappGetSize = () => {
     const query = Taro.createSelectorQuery().in(this.$scope);
 
-    query.select(`#${this.id}`).boundingClientRect();
-
+    query.select('.virutal-list-item').boundingClientRect();
     query.exec(rect => {
       if (!rect || !rect[0]) {
         return;
       }
 
       const { width, height } = rect[0];
-      onResize(this.props.index, { width, height });
-    });
-  };
 
-  saveRef = ref => {
-    setTimeout(() => {
-      if (Taro.getEnv() === ENV_TYPE.WEB && ref) {
-        this.handleWEBObserver(ref._rendered && ref._rendered.dom);
+      if (width === 0 || height === 0) {
+        return;
       }
-    }, 0);
+
+      this.context.onResize(this.props.index, { width, height });
+    });
   };
 
   handleWEBObserver(node: HTMLDivElement) {
@@ -90,33 +95,23 @@ export default class VirtualItem extends Component<VirtualItemProps> {
     if (!this.context) {
       return;
     }
+
     const { width, height } = entry.contentRect;
 
     if (width === 0 || height === 0) {
       return;
     }
+
     this.context.onResize(this.props.index, { width, height });
   };
 
   render() {
-    const { style, index } = this.props;
+    const { style, id, className } = this.props;
 
-    if (!this.context || !this.context.registerUpdateCallback) {
-      return this.props.children;
-    }
+    const cls = `virutal-list-item ${className || ''}`.trim();
 
-    const { getStyle } = this.context as VirtualListContext;
-    const itemStyle = typeof getStyle === 'function' ? getStyle(index) : null;
-
-    return itemStyle === null ? null : (
-      <View
-        ref={this.saveRef}
-        id={this.id}
-        style={{
-          ...style,
-          ...itemStyle
-        }}
-      >
+    return (
+      <View ref={this.saveRef} id={id} className={cls} style={style}>
         {this.props.children}
       </View>
     );

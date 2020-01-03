@@ -1,52 +1,87 @@
 import Taro, { PureComponent } from '@tarojs/taro';
-import PropTypes from 'prop-types';
 import { View, ScrollView } from '@tarojs/components';
 
+import {
+  ListProps,
+  MAX_REFRESHING_TIME,
+  HEIGHT,
+  DISTANCE_TO_REFRESH,
+  DAMPING,
+  ListPropTypes
+} from './types';
+import { normalizeValue, normalizeStyle } from './VirtualList/utils';
 import VirtualList from './VirtualList';
-import { ListProps } from './types';
 import './index.less';
 
 interface ListState {
   containerSize: number;
 }
 
-const  normalize = (value:any) => typeof value === 'number' ? `${value}px`: value
+interface ListWeappState extends ListState {
+  // 用于 和 wxs 通信主动关闭刷新
+  closed: boolean;
+}
 
-export default class TaroList extends PureComponent<ListProps, ListState> {
+export default class TaroList extends PureComponent<ListProps, ListWeappState> {
   static defaultProps: Partial<ListProps> = {
-    height: 600,
+    height: HEIGHT,
     className: '',
-    distanceToRefresh: 60,
-    damping: 200
+    width: '100%',
+    distanceToRefresh: DISTANCE_TO_REFRESH,
+    damping: DAMPING
   };
 
-  static propTypes: React.WeakValidationMap<ListProps> = {
-    damping: PropTypes.number,
-    distanceToRefresh: PropTypes.number,
-    refreshing: PropTypes.bool,
-    height: PropTypes.number.isRequired,
-    className: PropTypes.string,
-    style: PropTypes.object,
-    onRefresh: PropTypes.func,
-    onLoadmore: PropTypes.func,
-    custom: PropTypes.bool
-  };
+  static propTypes = ListPropTypes;
 
   static options = {
     addGlobalClass: true
   };
 
   static index = 0;
-  private virtualListRef = Taro.createRef<VirtualList>();
 
+  private virtualListRef = Taro.createRef<VirtualList>();
+  private refreshTimer: number = 0;
   private domId = `zyouh-list__id-${TaroList.index++}`;
 
   constructor(props: ListProps) {
     super(props);
 
     this.state = {
-      containerSize: 0
+      containerSize: 603,
+      closed: false
     };
+  }
+
+  componentWillMount() {
+    this.$scope.onRefresh = this.onRefresh;
+  }
+
+  componentDidMount() {
+    if (this.props.virtual) {
+      this.setVirtualListHeight();
+    }
+  }
+
+  private onScrollOffsetChange = (offset: number) => {
+    this.virtualListRef.current!.setScrollOffset(offset);
+  };
+
+  private setVirtualListHeight() {
+    const query = Taro.createSelectorQuery().in(this.$scope);
+
+    query.select(`#${this.domId}`).boundingClientRect();
+    query.exec(rect => {
+      this.setState(
+        {
+          containerSize: rect[0].height
+        },
+        () => {
+          if (this.virtualListRef.current) {
+            // this.virtualListRef.current.forceUpdate();
+          }
+        }
+      );
+    });
   }
 
   private handleScrollToLower = () => {
@@ -57,46 +92,90 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     }
   };
 
-  setRefresh = () => {
-    console.log('refresh')
-  }
+  private scrollTimer = 0;
+
+  private handleScroll = evt => {
+    if (this.props.virtual && this.virtualListRef.current) {
+      this.virtualListRef.current!.setScrollOffset(evt.detail.scrollTop);
+
+      return ;
+      clearTimeout(this.scrollTimer);
+
+      // @ts-ignore
+      this.scrollTimer = setTimeout(() => {
+        console.log(evt.detail.scrollTop);
+      }, 20);
+    }
+  };
+
+  private onRefresh = () => {
+    const { onRefresh } = this.props;
+
+    this.clearResfreshTimer();
+    this.setState({
+      closed: false
+    });
+
+    const cancel = () => {
+      this.clearResfreshTimer();
+      if (!this.props.refreshing) {
+        this.setState({
+          closed: true
+        });
+      }
+    };
+
+    // @ts-ignore
+    this.refreshTimer = setTimeout(cancel, MAX_REFRESHING_TIME);
+
+    if (typeof onRefresh === 'function') {
+      onRefresh(cancel);
+    }
+  };
+
+  clearResfreshTimer = () => {
+    clearTimeout(this.refreshTimer);
+  };
 
   render() {
     const props = this.props;
     const {
-      height,
       style,
+      width,
       className,
       custom,
       distanceToRefresh,
       damping,
+      refreshing,
+      height,
       virtual,
       itemCount,
       itemSize,
       estimatedSize,
+      overscan,
       stickyIndices,
-      refreshing,
-      overscan
+      dynamic,
+      scrollToIndex,
+      scrollWithAnimation,
+      enableBackToTop, dataManager
     } = props;
     const { containerSize } = this.state;
 
     const cls = `zyouh-list__container ${className}`.trim();
-    const scrollerStyle = {
+    const scrollerStyle = normalizeStyle({
       width: '100%',
-      height: normalize(height),
-    };
+      height
+    });
 
     const refreshConfig = {
       damping,
       distanceToRefresh,
-      // @ts-ignore
-      id: this.id
+      id: this.domId
     };
 
     const indicatorStyle = {
-      height: normalize(distanceToRefresh),
-      marginTop:  normalize(-distanceToRefresh!),
-    }
+      height: normalizeValue(distanceToRefresh)
+    };
 
     return (
       <View data-refreshing={refreshing} style={style} className={cls}>
@@ -107,24 +186,26 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
           style={scrollerStyle}
           className='zyouh-list__scroller-view'
           onScrollToLower={this.handleScrollToLower}
+          onScroll={this.handleScroll}
           onTouchStart='{{refresh.handleTouchStart}}'
           onTouchMove='{{refresh.handleTouchMove}}'
           onTouchEnd='{{refresh.handleTouchEnd}}'
           onTouchCancel='{{refresh.handleTouchEnd}}'
+          scrollWithAnimation={scrollWithAnimation}
+          enableBackToTop={enableBackToTop}
           scrollY
         >
           {!custom && (
             <View style={indicatorStyle} className='zyouh-list__indicator'>
-              <View  className='zyouh-list__indicator-dot'></View>
               <View className='zyouh-list__indicator-dot'></View>
               <View className='zyouh-list__indicator-dot'></View>
-              <View onClick={this.setRefresh} style={{display: 'none'}} />
+              <View className='zyouh-list__indicator-dot'></View>
             </View>
           )}
           <View data-config={refreshConfig} className='zyouh-list__body'>
             {virtual ? (
               <VirtualList
-                width='100%'
+                width={width}
                 ref={this.virtualListRef}
                 height={containerSize}
                 estimatedSize={estimatedSize}
@@ -132,6 +213,10 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
                 itemSize={itemSize}
                 stickyIndices={stickyIndices}
                 overscan={overscan}
+                dynamic={dynamic}
+                scrollToIndex={scrollToIndex}
+                onOffsetChange={this.onScrollOffsetChange}
+                dataManager={dataManager}
               >
                 {props.children}
               </VirtualList>

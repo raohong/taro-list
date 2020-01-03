@@ -3,6 +3,8 @@ import { View, Image } from '@tarojs/components';
 
 import List from '../../components/List/index';
 import VirtualItem from '../../components/List/VirtualList/VirtualItem';
+import { VirutalListDataManager } from '../../components/List/VirtualList/VirutalListDataManager';
+import './index.less';
 
 function getTopic(page: number) {
   return Taro.request({
@@ -14,9 +16,13 @@ function getTopic(page: number) {
   });
 }
 
+
 export default () => {
   const pageRef = useRef(1);
   const [list, set] = useState<any[]>([]);
+  const dataManager = useRef<VirutalListDataManager>(
+    new VirutalListDataManager(set)
+  );
   const [loading, setLoading] = useState(false);
   const [ened, setEnded] = useState(false);
 
@@ -24,14 +30,13 @@ export default () => {
     setLoading(true);
     return getTopic(pageRef.current)
       .then(({ data }) => {
-        const list = data.data || [];
+        const list: any[] = data.data || [];
         if (list.length) {
           pageRef.current += 1;
         } else {
           setEnded(true);
         }
-
-        set(prev => prev.concat(list));
+        dataManager.current.push(list);
       })
       .then(() => {
         setLoading(false);
@@ -64,12 +69,16 @@ export default () => {
       <List
         onRefresh={handleRefresh}
         onLoadmore={fetch}
+        estimatedSize={80}
+        itemSize={80}
+        virtual
+        dynamic={false}
         height={windowHeight}
-        itemCount={list.length}
+        dataManager={dataManager.current}
+        itemCount={dataManager.current.get().length}
       >
-        {pageRef.current === 1 && loading ? 'loading...' : null}
-        {list.map((item, index) => (
-          <VirtualItem index={index} key={index}>
+        {list.map(item => (
+          <VirtualItem index={item.index} style={item.style} key={item.item.id}>
             <View
               style={{
                 padding: '10px 10px 10px'
@@ -91,23 +100,17 @@ export default () => {
                     marginRight: '10px',
                     height: '50px'
                   }}
-                  src={item.author.avatar_url}
+                  src={item.item.author.avatar_url}
                 />
                 <View>
-                  <View>{item.title}</View>
-                  <View>{item.author.loginname}</View>
+                  <View>{item.item.title}</View>
+                  <View>{item.item.author.loginname}</View>
                 </View>
               </View>
             </View>
           </VirtualItem>
         ))}
-
-        {pageRef.current > 1 && loading ? (
-          <View style={{ textAlign: 'center' }}>加载更多</View>
-        ) : null}
-        {ened ? <View style={{ textAlign: 'center' }}>没有更多了</View> : null}
       </List>
-
     </View>
   );
 };

@@ -1,10 +1,18 @@
 import Taro, { PureComponent } from '@tarojs/taro';
-import PropTypes from 'prop-types';
 import { View, ScrollView } from '@tarojs/components';
 
 import VirtualList from './VirtualList';
-import { REFRESH_STATUS, ListProps, MAX_REFRESHING_TIME } from './types';
+import {
+  REFRESH_STATUS,
+  ListProps,
+  MAX_REFRESHING_TIME,
+  DISTANCE_TO_REFRESH,
+  DAMPING,
+  HEIGHT,
+  ListPropTypes
+} from './types';
 import './index.less';
+import { VirtualListContext } from './VirtualList/context';
 
 interface ListState {
   containerSize: number;
@@ -19,23 +27,14 @@ const opts = {
 
 export default class TaroList extends PureComponent<ListProps, ListState> {
   static defaultProps: Partial<ListProps> = {
-    height: 600,
+    height: HEIGHT,
     className: '',
-    distanceToRefresh: 60,
-    damping: 200
+    width: '100%',
+    distanceToRefresh: DISTANCE_TO_REFRESH,
+    damping: DAMPING
   };
 
-  static propTypes: React.WeakValidationMap<ListProps> = {
-    damping: PropTypes.number,
-    distanceToRefresh: PropTypes.number,
-    refreshing: PropTypes.bool,
-    height: PropTypes.number.isRequired,
-    className: PropTypes.string,
-    style: PropTypes.object,
-    onRefresh: PropTypes.func,
-    onLoadmore: PropTypes.func,
-    custom: PropTypes.bool
-  };
+  static propTypes = ListPropTypes;
 
   static options = {
     addGlobalClass: true
@@ -64,23 +63,23 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   componentDidMount() {
     this.getRootNode();
     this.addEventListener();
-    this.setState(
-      {
-        containerSize: this.rootNode.offsetHeight
-      },
-      () => {
-        if (this.virtualListRef.current && this.props.virtual) {
-          this.virtualListRef.current.forceUpdate();
-        }
-      }
-    );
-
     this.triggerRefresh();
+
+    if (this.props.virtual) {
+      this.setVirtualListHeight();
+    }
   }
 
   componentDidUpdate(prevProps: ListProps) {
-    if (prevProps.refreshing !== this.props.refreshing) {
+    const { refreshing, virtual } = this.props;
+    if (prevProps.refreshing !== refreshing) {
       this.triggerRefresh();
+    }
+
+    const offset = this.getScrollOffset();
+
+    if (virtual && this.virtualListRef.current) {
+      this.virtualListRef.current.setScrollOffset(offset);
     }
   }
 
@@ -89,13 +88,33 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     this.removeEventListener();
   }
 
+  private setVirtualListHeight() {
+    this.setState({
+      containerSize: this.rootNode.offsetHeight
+    });
+  }
+
+  private onScrollOffsetChange = (offset: number) => {
+    this.virtualListRef.current!.setScrollOffset(offset);
+  };
+
   private handleTouchStart = (evt: TouchEvent) => {
+    if (this.state.status === REFRESH_STATUS.RELEASE) {
+      this.cancelEvent(evt);
+      return;
+    }
+
     this.initialY = evt.touches[0].clientY;
   };
 
   private handleTouchMove = (evt: TouchEvent) => {
     const y = evt.touches[0].clientY;
     const { status, draging, offset } = this.state;
+
+    if (status === REFRESH_STATUS.RELEASE) {
+      this.cancelEvent(evt);
+      return;
+    }
 
     // 如果 offset 大于0 处于拖动中或者好 release
     if (y < this.initialY && offset < 1) {
@@ -110,20 +129,13 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       this.setState({
         draging: true
       });
-      // 如果是 releae 补上 offset
-      this.initialY = status === REFRESH_STATUS.RELEASE ? y - offset : y;
+      this.initialY = y;
     }
-
-    evt.stopPropagation();
-    evt.preventDefault();
 
     const deltaY = this.damping(y - this.initialY);
-    this.updateOffset(deltaY);
 
-    // 刷新释放后状态不变 仅改变 offset
-    if (status === REFRESH_STATUS.RELEASE) {
-      return;
-    }
+    this.cancelEvent(evt);
+    this.updateOffset(deltaY);
 
     if (deltaY < this.props.distanceToRefresh!) {
       if (status !== REFRESH_STATUS.PULL) {
@@ -141,7 +153,10 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   };
 
   private handleTouchEnd = () => {
-    const { status, draging, offset } = this.state;
+    const { status, draging } = this.state;
+    if (status === REFRESH_STATUS.RELEASE) {
+      return;
+    }
 
     if (draging) {
       this.setState(() => ({
@@ -150,20 +165,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     }
 
     if (status === REFRESH_STATUS.ACTIVE) {
-      this.initialY = 0;
       this.setRefresh();
-      // 触发刷新后 如果下拉距离 小于 distanceToRefresh 则关闭刷新 此时这里不能改变 status
-    } else if (status === REFRESH_STATUS.RELEASE) {
-      if (offset < this.props.distanceToRefresh!) {
-        this.clearRefreshTimer();
-        // 这里强制重置掉刷新状态
-        this.setState({
-          status: REFRESH_STATUS.NONE
-        });
-        this.reset();
-      } else {
-        this.updateOffset(this.props.distanceToRefresh!)
-      }
     } else {
       this.reset();
     }
@@ -190,7 +192,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     const onEnd = () => {
       this.clearRefreshTimer();
       if (!this.props.refreshing) {
-        this.setState(() => ({ status: REFRESH_STATUS.NONE }), this.reset);
+        this.reset();
       }
     };
 
@@ -199,6 +201,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     this.refreshTimer = window.setTimeout(() => {
       onEnd();
     }, MAX_REFRESHING_TIME);
+
     if (typeof onRefresh === 'function') {
       onRefresh(onEnd);
     }
@@ -207,22 +210,28 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   private triggerRefresh = () => {
     const { refreshing } = this.props;
 
-    if (!this.state.draging) {
-      if (refreshing) {
-        this.setRefresh();
-      } else {
-        this.setState({
-          status: REFRESH_STATUS.NONE
-        });
+    if (this.state.draging) {
+      return;
+    }
 
-        this.reset();
-      }
+    if (refreshing) {
+      this.setRefresh();
+    } else {
+      this.reset();
     }
   };
 
   private reset = () => {
     this.initialY = 0;
     this.updateOffset(0);
+    this.setState({
+      status: REFRESH_STATUS.NONE
+    });
+  };
+
+  private cancelEvent = (evt: UIEvent) => {
+    evt.preventDefault();
+    evt.stopPropagation();
   };
 
   private clearRefreshTimer = () => {
@@ -249,23 +258,28 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     const props = this.props;
     const {
       height,
+      width,
       style,
       className,
       custom,
       distanceToRefresh,
       virtual,
       itemCount,
+      dynamic,
       itemSize,
       estimatedSize,
       stickyIndices,
-      overscan
+      scrollToIndex,
+      overscan,
+      enableBackToTop,
+      scrollWithAnimation,
+      dataManager
     } = props;
     const { draging, status, offset, containerSize } = this.state;
 
     const cls = `zyouh-list__container ${className}`.trim();
-    const width = '100%';
     const bodyCls = `zyouh-list__body ${
-      !draging ? 'zyouh-list__body-refreshing' : ''
+      !draging ? 'zyouh-list__body-transition' : ''
     }`.trim();
 
     const bodyStyle: React.CSSProperties = {
@@ -277,11 +291,15 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
         Math.min(offset, distanceToRefresh!)}px, 0)`
     };
 
+
+
     return (
       <View style={style} className={cls}>
         <ScrollView
           id={this.domId}
           onScroll={this.handleScroll}
+          scrollWithAnimation={scrollWithAnimation}
+          enableBackToTop={enableBackToTop}
           style={{ width, height }}
           className='zyouh-list__scroller-view'
           onScrollToLower={this.handleScrollToLower}
@@ -307,9 +325,13 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
                 height={containerSize}
                 estimatedSize={estimatedSize}
                 itemCount={itemCount}
+                dataManager={dataManager}
                 itemSize={itemSize}
-                stickyIndices={stickyIndices}
+                dynamic={dynamic}
                 overscan={overscan}
+                scrollToIndex={scrollToIndex}
+                stickyIndices={stickyIndices}
+                onOffsetChange={this.onScrollOffsetChange}
               >
                 {props.children}
               </VirtualList>

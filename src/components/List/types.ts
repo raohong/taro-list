@@ -1,18 +1,19 @@
+import PropTypes from 'prop-types';
 import { VirtualListProps } from './VirtualList';
 
 export type ExcludeProps =
-  | 'width'
   | 'height'
+  | 'width'
   | 'className'
   | 'style'
-  | 'dynamic'
   | 'scrollDirection'
   | 'scrollOffset'
-  | 'scrollToIndex';
+  | 'onOffsetChange';
 
 export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   height?: number;
   className?: string;
+  width?: number | string;
   style?: React.CSSProperties;
   distanceToRefresh?: number;
   damping?: number;
@@ -21,7 +22,22 @@ export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   onLoadmore?: () => void;
   custom?: boolean;
   virtual?: boolean;
+  enableBackToTop?:boolean;
+  scrollWithAnimation?:boolean;
 }
+
+export const ListPropTypes: React.WeakValidationMap<ListProps> = {
+  damping: PropTypes.number,
+  distanceToRefresh: PropTypes.number,
+  refreshing: PropTypes.bool,
+  height: PropTypes.number.isRequired,
+  className: PropTypes.string,
+  style: PropTypes.object,
+  onRefresh: PropTypes.func,
+  onLoadmore: PropTypes.func,
+  custom: PropTypes.bool,
+  scrollToIndex: PropTypes.number,
+};
 
 export enum REFRESH_STATUS {
   NONE = 'none',
@@ -34,3 +50,8 @@ export enum REFRESH_STATUS {
 }
 
 export const MAX_REFRESHING_TIME = 1000 * 10;
+
+export const DAMPING = 200;
+export const DISTANCE_TO_REFRESH = 60;
+
+export const HEIGHT = 600;

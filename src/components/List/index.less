@@ -5,13 +5,15 @@
     position: relative;
     overflow: visible;
     will-change: transform;
+    overflow-anchor:none;
     -webkit-overflow-scrolling: touch;
-    &-refreshing {
+    &-transition {
       transition: transform 0.3s;
     }
   }
 
   &__scroller-view {
+    overflow-anchor:none;
     position: relative;
   }
 
@@ -19,7 +21,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    will-change: transform;
+    will-change: transform, margin-top;
     position: absolute;
     left: 0;
     right: 0;

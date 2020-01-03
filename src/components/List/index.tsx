@@ -1,7 +1,7 @@
 import Taro, { PureComponent } from '@tarojs/taro';
 
 import './index.less';
-import { ListProps } from './index.h5';
+import { ListProps } from './types';
 
 export default class TaroList extends PureComponent<ListProps> {
   static options = {

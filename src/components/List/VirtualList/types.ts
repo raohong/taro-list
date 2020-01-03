@@ -34,6 +34,9 @@ export const DEFAULT_ITEMSIZE = 50;
 
 export const DEFAULT_ZINDEX = 10;
 
+
+export const DEFAULT_OVERSCAN = 3;
+
 export interface CellCacheItem {
   width: number;
   height: number;

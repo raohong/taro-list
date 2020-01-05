@@ -1,9 +1,11 @@
-import Taro, { useState, useRef, useCallback, useEffect } from '@tarojs/taro';
-import { View, Image } from '@tarojs/components';
+import Taro from '@tarojs/taro';
+import { View } from '@tarojs/components';
 
 import List from '../../components/List/index';
-import VirtualItem from '../../components/List/VirtualList/VirtualItem';
-import { VirutalListDataManager } from '../../components/List/VirtualList/VirutalListDataManager';
+import {
+  VirutalListDataManager,
+  VirutalListItemData
+} from '../../components/List/VirtualList/VirutalListDataManager';
 import './index.less';
 
 function getTopic(page: number) {
@@ -16,72 +18,90 @@ function getTopic(page: number) {
   });
 }
 
+interface IndexState {
+  list: VirutalListItemData[];
+}
 
-export default () => {
-  const pageRef = useRef(1);
-  const [list, set] = useState<any[]>([]);
-  const dataManager = useRef<VirutalListDataManager>(
-    new VirutalListDataManager(set)
-  );
-  const [loading, setLoading] = useState(false);
-  const [ened, setEnded] = useState(false);
+export default class Index extends Taro.Component<any, IndexState> {
+  page = 1;
+  state: IndexState = {
+    list: []
+  };
 
-  const fetch = useCallback(() => {
-    setLoading(true);
-    return getTopic(pageRef.current)
-      .then(({ data }) => {
-        const list: any[] = data.data || [];
-        if (list.length) {
-          pageRef.current += 1;
-        } else {
-          setEnded(true);
-        }
-        dataManager.current.push(list);
-      })
-      .then(() => {
-        setLoading(false);
+  dataManager = new VirutalListDataManager({
+    itemSize: 120,
+    onChange: data => {
+      this.setState({
+        list: data
       });
-  }, []);
+    }
+  });
 
-  const handleRefresh = useCallback(
-    cb => {
-      pageRef.current = 0;
-      setEnded(false);
-      fetch().then(cb);
-    },
-    [fetch]
-  );
+  componentDidMount() {
+    this.fetch();
+  }
 
-  useEffect(() => {
-    fetch();
-  }, []);
+  fetch = () => {
+    return getTopic(this.page).then(({ data }) => {
+      const list: any[] = data.data || [];
+      if (list.length) {
+        this.page += 1;
+      }
+      this.dataManager.push(...list);
+    });
+  };
 
-  const { windowHeight } = Taro.getSystemInfoSync();
+  handleRefresh = cb => {
+    this.fetch().then(cb);
+  };
 
+  render() {
+    const { list } = this.state;
+    const { windowHeight } = Taro.getSystemInfoSync();
 
-  return (
-    <View
-      style={{
-        fontSize: '16px',
-        backgroundColor: '#f4f4f4'
-      }}
-    >
-      <List
-        onRefresh={handleRefresh}
-        onLoadmore={fetch}
-        estimatedSize={80}
-        itemSize={80}
-        virtual
-        dynamic={false}
-        height={windowHeight}
-        dataManager={dataManager.current}
-        itemCount={dataManager.current.get().length}
+    return (
+      <View
+        style={{
+          fontSize: '16px',
+          backgroundColor: '#f4f4f4'
+        }}
       >
-        {list.map(item => (
-          <VirtualItem index={item.index} style={item.style} key={item.item.id}>
+        <View className='menu-list'>
+          <View
+            className='menu-item'
+            onClick={() =>
+              this.dataManager.updateConfig({
+                itemSize: 100 + Math.floor(Math.random() * 100)
+              })
+            }
+          >
+            改变 itemSize
+          </View>
+          <View
+            className='menu-item'
+            onClick={() =>
+              this.dataManager.updateConfig({
+                stickyIndices: [0, 1, 2]
+              })
+            }
+          >
+            设置 sticky
+          </View>
+        </View>
+        <List
+          onRefresh={this.handleRefresh}
+          onLoadmore={this.fetch}
+          virtual
+          height={windowHeight}
+          dataManager={this.dataManager}
+        >
+          {list.map(item => (
             <View
+              key={item.item.id}
               style={{
-                padding: '10px 10px 10px'
+                padding: '10px 10px 10px',
+                overflow: 'hidden',
+                ...item.style
               }}
             >
               <View
@@ -92,15 +112,14 @@ export default () => {
                   borderRadius: '5px'
                 }}
               >
-                <Image
-                  mode='aspectFill'
+                <View
                   style={{
                     width: '50px',
                     flexShrink: 0,
                     marginRight: '10px',
-                    height: '50px'
+                    height: '50px',
+                    background: `no-repeat url(${item.item.author.avatar_url}) center / cover`
                   }}
-                  src={item.item.author.avatar_url}
                 />
                 <View>
                   <View>{item.item.title}</View>
@@ -108,9 +127,9 @@ export default () => {
                 </View>
               </View>
             </View>
-          </VirtualItem>
-        ))}
-      </List>
-    </View>
-  );
-};
+          ))}
+        </List>
+      </View>
+    );
+  }
+}

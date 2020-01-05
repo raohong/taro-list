@@ -3,6 +3,7 @@ import { VirtualListProps } from './VirtualList';
 
 export type ExcludeProps =
   | 'height'
+  | 'dynamic'
   | 'width'
   | 'className'
   | 'style'
@@ -22,8 +23,8 @@ export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   onLoadmore?: () => void;
   custom?: boolean;
   virtual?: boolean;
-  enableBackToTop?:boolean;
-  scrollWithAnimation?:boolean;
+  enableBackToTop?: boolean;
+  scrollWithAnimation?: boolean;
 }
 
 export const ListPropTypes: React.WeakValidationMap<ListProps> = {
@@ -36,7 +37,7 @@ export const ListPropTypes: React.WeakValidationMap<ListProps> = {
   onRefresh: PropTypes.func,
   onLoadmore: PropTypes.func,
   custom: PropTypes.bool,
-  scrollToIndex: PropTypes.number,
+  scrollToIndex: PropTypes.number
 };
 
 export enum REFRESH_STATUS {

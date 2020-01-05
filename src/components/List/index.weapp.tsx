@@ -11,6 +11,7 @@ import {
 } from './types';
 import { normalizeValue, normalizeStyle } from './VirtualList/utils';
 import VirtualList from './VirtualList';
+import throttle from './lodash.throttle';
 import './index.less';
 
 interface ListState {
@@ -62,6 +63,16 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
     }
   }
 
+  componentDidUpdate(prevProps: ListProps) {
+    if (prevProps.height !== this.props.height && this.props.height) {
+      this.setVirtualListHeight();
+    }
+  }
+
+  componentWillUnmount() {
+    this.handleScroll.cancel();
+  }
+
   private onScrollOffsetChange = (offset: number) => {
     this.virtualListRef.current!.setScrollOffset(offset);
   };
@@ -71,16 +82,9 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
 
     query.select(`#${this.domId}`).boundingClientRect();
     query.exec(rect => {
-      this.setState(
-        {
-          containerSize: rect[0].height
-        },
-        () => {
-          if (this.virtualListRef.current) {
-            // this.virtualListRef.current.forceUpdate();
-          }
-        }
-      );
+      this.setState({
+        containerSize: rect[0].height
+      });
     });
   }
 
@@ -92,21 +96,11 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
     }
   };
 
-  private scrollTimer = 0;
-
-  private handleScroll = evt => {
+  private handleScroll = throttle(evt => {
     if (this.props.virtual && this.virtualListRef.current) {
       this.virtualListRef.current!.setScrollOffset(evt.detail.scrollTop);
-
-      return ;
-      clearTimeout(this.scrollTimer);
-
-      // @ts-ignore
-      this.scrollTimer = setTimeout(() => {
-        console.log(evt.detail.scrollTop);
-      }, 20);
     }
-  };
+  }, 50);
 
   private onRefresh = () => {
     const { onRefresh } = this.props;
@@ -154,10 +148,10 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
       estimatedSize,
       overscan,
       stickyIndices,
-      dynamic,
       scrollToIndex,
       scrollWithAnimation,
-      enableBackToTop, dataManager
+      enableBackToTop,
+      dataManager
     } = props;
     const { containerSize } = this.state;
 
@@ -213,7 +207,6 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
                 itemSize={itemSize}
                 stickyIndices={stickyIndices}
                 overscan={overscan}
-                dynamic={dynamic}
                 scrollToIndex={scrollToIndex}
                 onOffsetChange={this.onScrollOffsetChange}
                 dataManager={dataManager}

@@ -1,4 +1,5 @@
 import Taro, { PureComponent } from '@tarojs/taro';
+import { Block } from '@tarojs/components';
 
 import './index.less';
 import { ListProps } from './types';
@@ -9,6 +10,6 @@ export default class TaroList extends PureComponent<ListProps> {
   };
 
   render() {
-    return this.props.children;
+    return <Block>{this.props.children}</Block>;
   }
 }

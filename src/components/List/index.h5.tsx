@@ -71,7 +71,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   }
 
   componentDidUpdate(prevProps: ListProps) {
-    const { refreshing, virtual } = this.props;
+    const { refreshing, virtual, height } = this.props;
     if (prevProps.refreshing !== refreshing) {
       this.triggerRefresh();
     }
@@ -80,6 +80,10 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
 
     if (virtual && this.virtualListRef.current) {
       this.virtualListRef.current.setScrollOffset(offset);
+    }
+
+    if (virtual && height !== prevProps.height) {
+      this.setVirtualListHeight();
     }
   }
 
@@ -265,7 +269,6 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       distanceToRefresh,
       virtual,
       itemCount,
-      dynamic,
       itemSize,
       estimatedSize,
       stickyIndices,
@@ -290,8 +293,6 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       transform: `translate3d(0, ${-distanceToRefresh! +
         Math.min(offset, distanceToRefresh!)}px, 0)`
     };
-
-
 
     return (
       <View style={style} className={cls}>
@@ -327,7 +328,6 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
                 itemCount={itemCount}
                 dataManager={dataManager}
                 itemSize={itemSize}
-                dynamic={dynamic}
                 overscan={overscan}
                 scrollToIndex={scrollToIndex}
                 stickyIndices={stickyIndices}

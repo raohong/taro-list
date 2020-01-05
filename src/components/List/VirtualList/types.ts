@@ -10,11 +10,6 @@ export enum DIRECTION {
   HORIZONTAL = 'horizontal'
 }
 
-export enum SCROLL_READY_STATUS {
-  NONE = 'none',
-  PREPARE = 'prepare'
-}
-
 export const scrollProp = {
   [DIRECTION.VERTICAL]: 'scrollTop',
   [DIRECTION.HORIZONTAL]: 'scrollLeft'
@@ -33,7 +28,6 @@ export const positionProp = {
 export const DEFAULT_ITEMSIZE = 50;
 
 export const DEFAULT_ZINDEX = 10;
-
 
 export const DEFAULT_OVERSCAN = 3;
 

@@ -56,7 +56,8 @@ const config = {
       {
         from: 'src/components/List/index.template.wxml',
         to: 'dist/components/List/index.template.wxml'
-      }
+      },
+
     ],
     options: {}
   },

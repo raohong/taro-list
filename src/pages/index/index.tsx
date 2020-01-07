@@ -1,5 +1,5 @@
 import Taro from '@tarojs/taro';
-import { View } from '@tarojs/components';
+import { View, Input } from '@tarojs/components';
 
 import List from '../../components/List/index';
 import {
@@ -20,12 +20,14 @@ function getTopic(page: number) {
 
 interface IndexState {
   list: VirutalListItemData[];
+  scrollIndex: number | undefined;
 }
 
 export default class Index extends Taro.Component<any, IndexState> {
   page = 1;
   state: IndexState = {
-    list: []
+    list: [],
+    scrollIndex: 10
   };
 
   dataManager = new VirutalListDataManager({
@@ -55,14 +57,21 @@ export default class Index extends Taro.Component<any, IndexState> {
     this.fetch().then(cb);
   };
 
+  handleBlur = evt => {
+    const index = parseInt(evt.detail.value, 10);
+
+    this.setState({
+      scrollIndex: isNaN(index) ? undefined : index
+    });
+  };
+
   render() {
-    const { list } = this.state;
-    const { windowHeight } = Taro.getSystemInfoSync();
+    const { list, scrollIndex } = this.state;
 
     return (
       <View
         style={{
-          fontSize: '16px',
+          fontSize: '16px'
         }}
       >
         <View className='menu-list'>
@@ -87,11 +96,21 @@ export default class Index extends Taro.Component<any, IndexState> {
             设置 sticky
           </View>
         </View>
+        <View className='action-area'>
+          <Input
+            className='input'
+            placeholder='输入 scrollToIndex'
+            type='number'
+            value={scrollIndex}
+            onBlur={this.handleBlur}
+          />
+        </View>
         <List
           onRefresh={this.handleRefresh}
           onLoadmore={this.fetch}
           virtual
-          height={windowHeight}
+          scrollToIndex={scrollIndex}
+          height='85vh'
           dataManager={this.dataManager}
         >
           {list.map(item => (
@@ -122,7 +141,9 @@ export default class Index extends Taro.Component<any, IndexState> {
                   }}
                 />
                 <View>
-                  <View>{item.item.title}</View>
+                  <View>
+                    #{item.index} - {item.item.title}
+                  </View>
                   <View>{item.item.author.loginname}</View>
                 </View>
               </View>

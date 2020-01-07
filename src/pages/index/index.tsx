@@ -54,7 +54,7 @@ export default class Index extends Taro.Component<any, IndexState> {
   };
 
   handleRefresh = cb => {
-    this.fetch().then(cb);
+    this.fetch()
   };
 
   handleBlur = evt => {

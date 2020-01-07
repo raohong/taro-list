@@ -9,11 +9,11 @@ import {
   DISTANCE_TO_REFRESH,
   DAMPING,
   HEIGHT,
-  ListPropTypes
+  ListPropTypes,
+  REFRESH_STATUS_TEXT
 } from './types';
 import { ComponentResizeObserver } from './ComponentResizeObserver';
 import './index.less';
-import { scrollProp } from './VirtualList/types';
 
 interface ListState {
   containerSize: number;
@@ -279,11 +279,12 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       scrollToIndex,
       enableBackToTop,
       scrollWithAnimation,
-      dataManager
+      dataManager,
+      showRefreshText
     } = props;
-    const { draging, status, offset, containerSize, } = this.state;
+    const { draging, status, offset, containerSize } = this.state;
 
-    const cls = `zyouh-list__container ${className}`.trim();
+    const cls = `zyouh-list__container ${className || ''}`.trim();
     const bodyCls = `zyouh-list__body ${
       !draging ? 'zyouh-list__body-transition' : ''
     }`.trim();
@@ -313,13 +314,23 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
             {!custom && (
               <View
                 style={normalIndicatorStyle}
-                className={`zyouh-list__indicator ${
-                  status === REFRESH_STATUS.RELEASE ? 'flashing' : ''
-                }`.trim()}
+                className={`zyouh-list__indicator-container ${showRefreshText ? 'zyouh-list__indicator-container--row': ''}`.trim()}
               >
-                <View className='zyouh-list__indicator-dot'></View>
-                <View className='zyouh-list__indicator-dot'></View>
-                <View className='zyouh-list__indicator-dot'></View>
+                <View
+                  className={`zyouh-list__indicator zyouh-list__indicator--dot ${
+                    status === REFRESH_STATUS.RELEASE ? 'flashing' : ''
+                  }`.trim()}
+                >
+                  <View className='zyouh-list__indicator-dot'></View>
+                  <View className='zyouh-list__indicator-dot'></View>
+                  <View className='zyouh-list__indicator-dot'></View>
+                </View>
+
+                {showRefreshText && (
+                  <View className='zyouh-list__indicator-text'>
+                    {REFRESH_STATUS_TEXT[status]}
+                  </View>
+                )}
               </View>
             )}
             <View style={bodyStyle} className={bodyCls}>

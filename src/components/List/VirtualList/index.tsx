@@ -83,6 +83,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     const { dataManager } = this.props;
     const { estimatedSize, itemCount, itemSize } = dataManager.__getState();
 
+    // 初始化
     const estimatedSizeGetter = getEstimatedGetter(estimatedSize!, itemSize!);
     this.sizeAndPositionManager = new SizeAndPositionManager({
       itemCount: itemCount!,
@@ -104,6 +105,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
 
     const { itemCount } = dataManager.__getState();
 
+    // itemCount > 0 才有效
     if (itemCount) {
       if (
         typeof scrollToIndex === 'number' &&

@@ -26,6 +26,7 @@ export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   enableBackToTop?: boolean;
   scrollWithAnimation?: boolean;
   disabled?: boolean;
+  showRefreshText?: boolean;
 }
 
 export const ListPropTypes: React.WeakValidationMap<ListProps> = {
@@ -37,6 +38,7 @@ export const ListPropTypes: React.WeakValidationMap<ListProps> = {
   style: PropTypes.object,
   onRefresh: PropTypes.func,
   onLoadmore: PropTypes.func,
+  showRefreshText: PropTypes.bool,
   custom: PropTypes.bool,
   scrollToIndex: PropTypes.number,
   disabled: PropTypes.bool
@@ -50,6 +52,12 @@ export enum REFRESH_STATUS {
   ACTIVE = 'active',
   // 释放
   RELEASE = 'release'
+}
+
+export enum REFRESH_STATUS_TEXT {
+  pull = '下拉刷新',
+  active = '释放刷新',
+  release = '更新中'
 }
 
 export const MAX_REFRESHING_TIME = 1000 * 10;

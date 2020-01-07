@@ -196,10 +196,15 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
           scrollY
         >
           {!custom && (
-            <View style={indicatorStyle} className='zyouh-list__indicator'>
-              <View className='zyouh-list__indicator-dot'></View>
-              <View className='zyouh-list__indicator-dot'></View>
-              <View className='zyouh-list__indicator-dot'></View>
+            <View
+              style={indicatorStyle}
+              className='zyouh-list__indicator-container'
+            >
+              <View className='zyouh-list__indicator zyouh-list__indicator--dot'>
+                <View className='zyouh-list__indicator-dot'></View>
+                <View className='zyouh-list__indicator-dot'></View>
+                <View className='zyouh-list__indicator-dot'></View>
+              </View>
             </View>
           )}
           <View data-config={refreshConfig} className='zyouh-list__body'>

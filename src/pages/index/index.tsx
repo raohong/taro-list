@@ -63,7 +63,6 @@ export default class Index extends Taro.Component<any, IndexState> {
       <View
         style={{
           fontSize: '16px',
-          backgroundColor: '#f4f4f4'
         }}
       >
         <View className='menu-list'>
@@ -101,6 +100,7 @@ export default class Index extends Taro.Component<any, IndexState> {
               style={{
                 padding: '10px 10px 10px',
                 overflow: 'hidden',
+                backgroundColor: '#f4f4f4',
                 ...item.style
               }}
             >

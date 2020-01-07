@@ -64,8 +64,15 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
   }
 
   componentDidUpdate(prevProps: ListProps) {
-    if (prevProps.height !== this.props.height && this.props.height) {
+    const { disabled, height } = this.props;
+    if (prevProps.height !== height && height) {
       this.setVirtualListHeight();
+    }
+
+    if (disabled && disabled !== prevProps.disabled) {
+      this.setState({
+        closed: true
+      });
     }
   }
 
@@ -143,15 +150,11 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
       refreshing,
       height,
       virtual,
-      itemCount,
-      itemSize,
-      estimatedSize,
-      overscan,
-      stickyIndices,
       scrollToIndex,
       scrollWithAnimation,
       enableBackToTop,
-      dataManager
+      dataManager,
+      disabled
     } = props;
     const { containerSize } = this.state;
 
@@ -164,12 +167,16 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
     const refreshConfig = {
       damping,
       distanceToRefresh,
-      id: this.domId
+      id: this.domId,
+      disabled
     };
 
     const indicatorStyle = {
       height: normalizeValue(distanceToRefresh)
     };
+
+
+    const scrollTop = 100;
 
     return (
       <View data-refreshing={refreshing} style={style} className={cls}>
@@ -181,6 +188,7 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
           className='zyouh-list__scroller-view'
           onScrollToLower={this.handleScrollToLower}
           onScroll={this.handleScroll}
+          scrollTop={scrollTop}
           onTouchStart='{{refresh.handleTouchStart}}'
           onTouchMove='{{refresh.handleTouchMove}}'
           onTouchEnd='{{refresh.handleTouchEnd}}'
@@ -202,11 +210,6 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
                 width={width}
                 ref={this.virtualListRef}
                 height={containerSize}
-                estimatedSize={estimatedSize}
-                itemCount={itemCount}
-                itemSize={itemSize}
-                stickyIndices={stickyIndices}
-                overscan={overscan}
                 scrollToIndex={scrollToIndex}
                 onOffsetChange={this.onScrollOffsetChange}
                 dataManager={dataManager}

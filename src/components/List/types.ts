@@ -25,6 +25,7 @@ export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   virtual?: boolean;
   enableBackToTop?: boolean;
   scrollWithAnimation?: boolean;
+  disabled?: boolean;
 }
 
 export const ListPropTypes: React.WeakValidationMap<ListProps> = {
@@ -37,7 +38,8 @@ export const ListPropTypes: React.WeakValidationMap<ListProps> = {
   onRefresh: PropTypes.func,
   onLoadmore: PropTypes.func,
   custom: PropTypes.bool,
-  scrollToIndex: PropTypes.number
+  scrollToIndex: PropTypes.number,
+  disabled: PropTypes.bool
 };
 
 export enum REFRESH_STATUS {

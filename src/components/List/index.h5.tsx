@@ -11,8 +11,8 @@ import {
   HEIGHT,
   ListPropTypes
 } from './types';
+import { ComponentResizeObserver } from './ComponentResizeObserver';
 import './index.less';
-import { VirtualListContext } from './VirtualList/context';
 
 interface ListState {
   containerSize: number;
@@ -63,7 +63,10 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   componentDidMount() {
     this.getRootNode();
     this.addEventListener();
-    this.triggerRefresh();
+
+    if (!this.props.disabled) {
+      this.triggerRefresh();
+    }
 
     if (this.props.virtual) {
       this.setVirtualListHeight();
@@ -71,9 +74,12 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   }
 
   componentDidUpdate(prevProps: ListProps) {
-    const { refreshing, virtual, height } = this.props;
-    if (prevProps.refreshing !== refreshing) {
+    const { refreshing, virtual, height, disabled } = this.props;
+
+    if (prevProps.refreshing !== refreshing && !disabled) {
       this.triggerRefresh();
+    } else if (prevProps.disabled !== disabled && disabled) {
+      this.reset();
     }
 
     const offset = this.getScrollOffset();
@@ -92,7 +98,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     this.removeEventListener();
   }
 
-  private setVirtualListHeight() {
+  private setVirtualListHeight = () => {
     this.setState({
       containerSize: this.rootNode.offsetHeight
     });
@@ -108,7 +114,9 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       return;
     }
 
-    this.initialY = evt.touches[0].clientY;
+    if (!this.props.disabled) {
+      this.initialY = evt.touches[0].clientY;
+    }
   };
 
   private handleTouchMove = (evt: TouchEvent) => {
@@ -121,7 +129,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     }
 
     // 如果 offset 大于0 处于拖动中或者好 release
-    if (y < this.initialY && offset < 1) {
+    if ((y < this.initialY && offset < 1) || this.props.disabled) {
       return;
     }
 
@@ -201,7 +209,6 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     };
 
     this.clearRefreshTimer();
-
     this.refreshTimer = window.setTimeout(() => {
       onEnd();
     }, MAX_REFRESHING_TIME);
@@ -268,12 +275,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       custom,
       distanceToRefresh,
       virtual,
-      itemCount,
-      itemSize,
-      estimatedSize,
-      stickyIndices,
       scrollToIndex,
-      overscan,
       enableBackToTop,
       scrollWithAnimation,
       dataManager
@@ -295,52 +297,48 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     };
 
     return (
-      <View style={style} className={cls}>
-        <ScrollView
-          id={this.domId}
-          onScroll={this.handleScroll}
-          scrollWithAnimation={scrollWithAnimation}
-          enableBackToTop={enableBackToTop}
-          style={{ width, height }}
-          className='zyouh-list__scroller-view'
-          onScrollToLower={this.handleScrollToLower}
-          scrollY
-        >
-          {!custom && (
-            <View
-              style={normalIndicatorStyle}
-              className={`zyouh-list__indicator ${
-                status === REFRESH_STATUS.RELEASE ? 'flashing' : ''
-              }`.trim()}
-            >
-              <View className='zyouh-list__indicator-dot'></View>
-              <View className='zyouh-list__indicator-dot'></View>
-              <View className='zyouh-list__indicator-dot'></View>
-            </View>
-          )}
-          <View style={bodyStyle} className={bodyCls}>
-            {virtual ? (
-              <VirtualList
-                width={width}
-                ref={this.virtualListRef}
-                height={containerSize}
-                estimatedSize={estimatedSize}
-                itemCount={itemCount}
-                dataManager={dataManager}
-                itemSize={itemSize}
-                overscan={overscan}
-                scrollToIndex={scrollToIndex}
-                stickyIndices={stickyIndices}
-                onOffsetChange={this.onScrollOffsetChange}
+      <ComponentResizeObserver onResize={this.setVirtualListHeight}>
+        <View style={style} className={cls}>
+          <ScrollView
+            id={this.domId}
+            onScroll={this.handleScroll}
+            scrollWithAnimation={scrollWithAnimation}
+            enableBackToTop={enableBackToTop}
+            style={{ width, height }}
+            className='zyouh-list__scroller-view'
+            onScrollToLower={this.handleScrollToLower}
+            scrollY
+          >
+            {!custom && (
+              <View
+                style={normalIndicatorStyle}
+                className={`zyouh-list__indicator ${
+                  status === REFRESH_STATUS.RELEASE ? 'flashing' : ''
+                }`.trim()}
               >
-                {props.children}
-              </VirtualList>
-            ) : (
-              props.children
+                <View className='zyouh-list__indicator-dot'></View>
+                <View className='zyouh-list__indicator-dot'></View>
+                <View className='zyouh-list__indicator-dot'></View>
+              </View>
             )}
-          </View>
-        </ScrollView>
-      </View>
+            <View style={bodyStyle} className={bodyCls}>
+              {virtual ? (
+                <VirtualList
+                  width={width}
+                  ref={this.virtualListRef}
+                  height={containerSize}
+                  dataManager={dataManager}
+                  scrollToIndex={scrollToIndex}
+                >
+                  {props.children}
+                </VirtualList>
+              ) : (
+                props.children
+              )}
+            </View>
+          </ScrollView>
+        </View>
+      </ComponentResizeObserver>
     );
   }
 

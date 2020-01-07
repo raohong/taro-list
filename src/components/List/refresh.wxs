@@ -49,6 +49,10 @@ function handleTouchMove(evt, ownerInstance) {
   var damping = config.damping;
   var distanceToRefresh = config.distanceToRefresh;
 
+  if (config.disabled) {
+    return false;
+  }
+
   if (!draging) {
     draging = true;
     initialY = cy;
@@ -113,7 +117,8 @@ function updateOffset(config, deltaY, body, indicator) {
     transform: 'translate3d(0, ' + deltaY + 'px, 0)'
   });
   indicator.setStyle({
-  'margin-top': clamp(deltaY - distanceToRefresh, -distanceToRefresh, 0) + 'px'
+    'margin-top':
+      clamp(deltaY - distanceToRefresh, -distanceToRefresh, 0) + 'px'
   });
 }
 
@@ -137,7 +142,7 @@ function triggerRefresh(refreshing, oldValue, ownerInstance) {
     return;
   }
 
-  if (refreshing) {
+  if (refreshing && !disabled) {
     setRefresh(config, body, indicator, ownerInstance);
   } else {
     reset(config, body, indicator);

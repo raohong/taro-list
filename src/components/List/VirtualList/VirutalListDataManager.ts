@@ -1,7 +1,5 @@
 import Taro from '@tarojs/taro';
 import isEqual from 'lodash.isequal';
-import PropTypes from 'prop-types';
-
 import { ItemStyle } from '.';
 import { ItemSize, DEFAULT_ITEMSIZE, DEFAULT_OVERSCAN } from './types';
 
@@ -44,19 +42,6 @@ export interface VirutalListDataManagerState<T> {
   stickyIndices: number[];
   onChange: VirutalListDataManagerChangeHandler<T>;
 }
-
-const propTypes: React.WeakValidationMap<VirutalListDataManagerOptions<any>> = {
-  estimatedSize: PropTypes.number,
-  overscan: PropTypes.number,
-  stickyIndices: PropTypes.array,
-  itemSize: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.array,
-    PropTypes.func
-  ]),
-  onChange: PropTypes.func.isRequired
-};
 
 const RATIO = Taro.getSystemInfoSync().windowWidth / 375;
 
@@ -254,7 +239,7 @@ export class VirutalListDataManager<T = any> {
         this.__lastSizeAndPositionData = sizeAndPositionOfItemData;
         onChange(items);
       } else if (!check) {
-        this.__lastSizeAndPositionData = items;
+        this.__lastSizeAndPositionData = sizeAndPositionOfItemData;
         onChange(items);
       }
     }

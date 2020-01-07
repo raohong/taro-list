@@ -14,13 +14,11 @@ import VirtualList from './VirtualList';
 import throttle from './lodash.throttle';
 import './index.less';
 
-interface ListState {
-  containerSize: number;
-}
-
-interface ListWeappState extends ListState {
+interface ListWeappState {
   // 用于 和 wxs 通信主动关闭刷新
   closed: boolean;
+  containerSize: number;
+  scrollTop: number | undefined;
 }
 
 export default class TaroList extends PureComponent<ListProps, ListWeappState> {
@@ -48,8 +46,9 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
     super(props);
 
     this.state = {
-      containerSize: 603,
-      closed: false
+      containerSize: 0,
+      closed: false,
+      scrollTop: undefined
     };
   }
 
@@ -81,7 +80,9 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
   }
 
   private onScrollOffsetChange = (offset: number) => {
-    this.virtualListRef.current!.setScrollOffset(offset);
+    this.setState({
+      scrollTop: offset
+    });
   };
 
   private setVirtualListHeight() {
@@ -156,7 +157,7 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
       dataManager,
       disabled
     } = props;
-    const { containerSize } = this.state;
+    const { containerSize, scrollTop } = this.state;
 
     const cls = `zyouh-list__container ${className}`.trim();
     const scrollerStyle = normalizeStyle({
@@ -174,9 +175,6 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
     const indicatorStyle = {
       height: normalizeValue(distanceToRefresh)
     };
-
-
-    const scrollTop = 100;
 
     return (
       <View data-refreshing={refreshing} style={style} className={cls}>

@@ -12,7 +12,7 @@ export type ExcludeProps =
   | 'onOffsetChange';
 
 export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
-  height?: number;
+  height?: number | string;
   className?: string;
   width?: number | string;
   style?: React.CSSProperties;
@@ -32,7 +32,7 @@ export const ListPropTypes: React.WeakValidationMap<ListProps> = {
   damping: PropTypes.number,
   distanceToRefresh: PropTypes.number,
   refreshing: PropTypes.bool,
-  height: PropTypes.number.isRequired,
+  height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   className: PropTypes.string,
   style: PropTypes.object,
   onRefresh: PropTypes.func,
@@ -57,4 +57,4 @@ export const MAX_REFRESHING_TIME = 1000 * 10;
 export const DAMPING = 200;
 export const DISTANCE_TO_REFRESH = 60;
 
-export const HEIGHT = 600;
+export const HEIGHT = 0;

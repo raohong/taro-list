@@ -13,6 +13,7 @@ import {
 } from './types';
 import { ComponentResizeObserver } from './ComponentResizeObserver';
 import './index.less';
+import { scrollProp } from './VirtualList/types';
 
 interface ListState {
   containerSize: number;
@@ -102,10 +103,10 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     this.setState({
       containerSize: this.rootNode.offsetHeight
     });
-  }
+  };
 
   private onScrollOffsetChange = (offset: number) => {
-    this.virtualListRef.current!.setScrollOffset(offset);
+    this.rootNode.scrollTop = offset;
   };
 
   private handleTouchStart = (evt: TouchEvent) => {
@@ -280,7 +281,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       scrollWithAnimation,
       dataManager
     } = props;
-    const { draging, status, offset, containerSize } = this.state;
+    const { draging, status, offset, containerSize, } = this.state;
 
     const cls = `zyouh-list__container ${className}`.trim();
     const bodyCls = `zyouh-list__body ${
@@ -329,6 +330,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
                   height={containerSize}
                   dataManager={dataManager}
                   scrollToIndex={scrollToIndex}
+                  onOffsetChange={this.onScrollOffsetChange}
                 >
                   {props.children}
                 </VirtualList>

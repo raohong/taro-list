@@ -48,6 +48,7 @@ export interface VirtualListProps {
   scrollDirection?: DIRECTION;
   scrollToIndex?: number;
   dataManager: VirutalListDataManager;
+  onOffsetChange: (scrollTop: number) => void;
 }
 
 type ItemStylePosition = 'sticky' | 'absolute';
@@ -64,7 +65,7 @@ export interface ItemStyle {
 export class VirtualList extends PureComponent<VirtualListProps> {
   static defaultProps: Partial<VirtualListProps> = {
     scrollDirection: DIRECTION.VERTICAL,
-    align: ALIGN.Auto,
+    align: ALIGN.CENTER,
     dynamic: false
   };
 
@@ -93,7 +94,27 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     dataManager.__setOnStateChange(this.onStateChange);
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps: VirtualListProps) {
+    const {
+      scrollToIndex,
+      scrollDirection,
+      onOffsetChange,
+      dataManager
+    } = this.props;
+
+    const { itemCount } = dataManager.__getState();
+
+    if (itemCount) {
+      if (
+        typeof scrollToIndex === 'number' &&
+        (prevProps.scrollToIndex !== scrollToIndex ||
+          (this.props[sizeProp[scrollDirection!]] &&
+            prevProps[sizeProp[scrollDirection!]] === 0))
+      ) {
+        onOffsetChange(this.getUpdatedScrollOffset(scrollToIndex, this.props));
+      }
+    }
+
     this.updateVirutalListDataRange();
   }
 
@@ -215,10 +236,11 @@ export class VirtualList extends PureComponent<VirtualListProps> {
 
   private getContainerSize(props = this.props) {
     const { scrollDirection } = props;
+
     return props[sizeProp[scrollDirection!]];
   }
 
-  private getStyle(index: number, sticky?: boolean,) {
+  private getStyle(index: number, sticky?: boolean) {
     const { scrollDirection } = this.props;
     const style = this.styleCache[index];
 
@@ -249,6 +271,17 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     this.styleCache[index] = normalizeStyle(itemStyle);
 
     return this.styleCache[index];
+  }
+
+  getUpdatedScrollOffset(scrollToIndex: number, props = this.props) {
+    const { align } = props;
+
+    return this.sizeAndPositionManager.getUpdatedOffsetForIndex({
+      align: align!,
+      currentOffset: this.offset,
+      targetIndex: scrollToIndex,
+      containerSize: this.getContainerSize()
+    });
   }
 }
 

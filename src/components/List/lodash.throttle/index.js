@@ -32,10 +32,12 @@ var reIsOctal = /^0o[0-7]+$/i;
 var freeParseInt = parseInt;
 
 /** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+var freeGlobal =
+  typeof global == 'object' && global && global.Object === Object && global;
 
 /** Detect free variable `self`. */
-var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+var freeSelf =
+  typeof self == 'object' && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
 var root = freeGlobal || freeSelf || Function('return this')();
@@ -52,7 +54,7 @@ var objectToString = objectProto.toString;
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeMax = Math.max,
-    nativeMin = Math.min;
+  nativeMin = Math.min;
 
 /**
  * Gets the timestamp of the number of milliseconds that have elapsed since
@@ -130,15 +132,15 @@ var now = function() {
  */
 function debounce(func, wait, options) {
   var lastArgs,
-      lastThis,
-      maxWait,
-      result,
-      timerId,
-      lastCallTime,
-      lastInvokeTime = 0,
-      leading = false,
-      maxing = false,
-      trailing = true;
+    lastThis,
+    maxWait,
+    result,
+    timerId,
+    lastCallTime,
+    lastInvokeTime = 0,
+    leading = false,
+    maxing = false,
+    trailing = true;
 
   if (typeof func != 'function') {
     throw new TypeError(FUNC_ERROR_TEXT);
@@ -147,13 +149,15 @@ function debounce(func, wait, options) {
   if (isObject(options)) {
     leading = !!options.leading;
     maxing = 'maxWait' in options;
-    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
+    maxWait = maxing
+      ? nativeMax(toNumber(options.maxWait) || 0, wait)
+      : maxWait;
     trailing = 'trailing' in options ? !!options.trailing : trailing;
   }
 
   function invokeFunc(time) {
     var args = lastArgs,
-        thisArg = lastThis;
+      thisArg = lastThis;
 
     lastArgs = lastThis = undefined;
     lastInvokeTime = time;
@@ -172,21 +176,25 @@ function debounce(func, wait, options) {
 
   function remainingWait(time) {
     var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime,
-        result = wait - timeSinceLastCall;
+      timeSinceLastInvoke = time - lastInvokeTime,
+      result = wait - timeSinceLastCall;
 
     return maxing ? nativeMin(result, maxWait - timeSinceLastInvoke) : result;
   }
 
   function shouldInvoke(time) {
     var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime;
+      timeSinceLastInvoke = time - lastInvokeTime;
 
     // Either this is the first call, activity has stopped and we're at the
     // trailing edge, the system time has gone backwards and we're treating
     // it as the trailing edge, or we've hit the `maxWait` limit.
-    return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
-      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
+    return (
+      lastCallTime === undefined ||
+      timeSinceLastCall >= wait ||
+      timeSinceLastCall < 0 ||
+      (maxing && timeSinceLastInvoke >= maxWait)
+    );
   }
 
   function timerExpired() {
@@ -224,7 +232,7 @@ function debounce(func, wait, options) {
 
   function debounced() {
     var time = now(),
-        isInvoking = shouldInvoke(time);
+      isInvoking = shouldInvoke(time);
 
     lastArgs = arguments;
     lastThis = this;
@@ -296,7 +304,7 @@ function debounce(func, wait, options) {
  */
 function throttle(func, wait, options) {
   var leading = true,
-      trailing = true;
+    trailing = true;
 
   if (typeof func != 'function') {
     throw new TypeError(FUNC_ERROR_TEXT);
@@ -306,9 +314,9 @@ function throttle(func, wait, options) {
     trailing = 'trailing' in options ? !!options.trailing : trailing;
   }
   return debounce(func, wait, {
-    'leading': leading,
-    'maxWait': wait,
-    'trailing': trailing
+    leading: leading,
+    maxWait: wait,
+    trailing: trailing
   });
 }
 
@@ -388,8 +396,10 @@ function isObjectLike(value) {
  * // => false
  */
 function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && objectToString.call(value) == symbolTag);
+  return (
+    typeof value == 'symbol' ||
+    (isObjectLike(value) && objectToString.call(value) == symbolTag)
+  );
 }
 
 /**
@@ -424,16 +434,18 @@ function toNumber(value) {
   }
   if (isObject(value)) {
     var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
-    value = isObject(other) ? (other + '') : other;
+    value = isObject(other) ? other + '' : other;
   }
   if (typeof value != 'string') {
     return value === 0 ? value : +value;
   }
   value = value.replace(reTrim, '');
   var isBinary = reIsBinary.test(value);
-  return (isBinary || reIsOctal.test(value))
+  return isBinary || reIsOctal.test(value)
     ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-    : (reIsBadHex.test(value) ? NAN : +value);
+    : reIsBadHex.test(value)
+    ? NAN
+    : +value;
 }
 
 module.exports = throttle;

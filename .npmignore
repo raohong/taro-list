@@ -3,4 +3,7 @@ deploy_versions/
 .temp/
 .rn_temp/
 node_modules/
+__mocks__
 .DS_Store
+scripts
+config

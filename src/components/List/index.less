@@ -5,8 +5,8 @@
     position: relative;
     overflow: visible;
     will-change: transform;
-    overflow-anchor: none;
-    -webkit-overflow-scrolling: touch;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
     &-transition {
       transition: transform 0.3s;
     }
@@ -28,8 +28,23 @@
       left: 0;
       right: 0;
       top: 0;
+      backface-visibility: hidden;
+      transform: translate3d(0, 0, 0);
       &--row {
         flex-direction: row;
+      }
+
+      &.flashing {
+        .@{cls}__indicator-dot {
+          animation: dot-flashing-1 1s step-end infinite both;
+
+          &:nth-child(2) {
+            animation-name: dot-flashing-2;
+          }
+          &:nth-child(3) {
+            animation-name: dot-flashing-3;
+          }
+        }
       }
     }
     &-text {
@@ -40,6 +55,7 @@
 
     &--dot {
       display: flex;
+      height: 100%;
       align-items: center;
       justify-content: center;
     }
@@ -55,19 +71,6 @@
       will-change: animation;
       & + .@{cls}__indicator-dot {
         margin-left: 20px;
-      }
-    }
-
-    &.flashing {
-     .@{cls}__indicator-dot {
-        animation: dot-flashing-1 1s step-end infinite both;
-
-        &:nth-child(2) {
-          animation-name: dot-flashing-2;
-        }
-        &:nth-child(3) {
-          animation-name: dot-flashing-3;
-        }
       }
     }
   }

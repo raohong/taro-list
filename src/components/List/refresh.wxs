@@ -43,7 +43,7 @@ function handleTouchMove(evt, ownerInstance) {
     return false;
   }
 
-  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator');
+  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator-container');
   var body = ownerInstance.selectComponent('.zyouh-list__body');
   var config = body.getDataset().config;
   var damping = config.damping;
@@ -80,7 +80,7 @@ function handleTouchMove(evt, ownerInstance) {
 }
 
 function handleTouchEnd(evt, ownerInstance) {
-  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator');
+  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator-container');
   var body = ownerInstance.selectComponent('.zyouh-list__body');
   var config = body.getDataset().config;
 
@@ -134,7 +134,7 @@ function setRefresh(config, body, indicator, ownerInstance) {
 }
 
 function triggerRefresh(refreshing, oldValue, ownerInstance) {
-  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator');
+  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator-container');
   var body = ownerInstance.selectComponent('.zyouh-list__body');
   var config = body.getDataset().config;
 
@@ -150,7 +150,7 @@ function triggerRefresh(refreshing, oldValue, ownerInstance) {
 }
 
 function closeRefresh(closed, oldValue, ownerInstance) {
-  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator');
+  var indicator = ownerInstance.selectComponent('.zyouh-list__indicator-container');
   var body = ownerInstance.selectComponent('.zyouh-list__body');
   var config = body.getDataset().config;
 

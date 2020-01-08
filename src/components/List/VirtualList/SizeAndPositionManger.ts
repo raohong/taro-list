@@ -147,7 +147,6 @@ export class SizeAndPositionManager {
   }): { start?: number; end?: number } {
     const totalSize = this.getTotalSize();
 
-
     if (totalSize === 0 || containerSize === 0) {
       return {};
     }

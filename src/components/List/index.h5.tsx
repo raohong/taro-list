@@ -2,16 +2,15 @@ import Taro, { PureComponent } from '@tarojs/taro';
 import { View, ScrollView } from '@tarojs/components';
 
 import VirtualList from './VirtualList';
+import { ListProps, ListPropTypes } from './types';
 import {
-  REFRESH_STATUS,
-  ListProps,
   MAX_REFRESHING_TIME,
+  HEIGHT,
   DISTANCE_TO_REFRESH,
   DAMPING,
-  HEIGHT,
-  ListPropTypes,
+  REFRESH_STATUS,
   REFRESH_STATUS_TEXT
-} from './types';
+} from './config';
 import { ComponentResizeObserver } from './ComponentResizeObserver';
 import './index.less';
 
@@ -114,10 +113,6 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       this.cancelEvent(evt);
       return;
     }
-
-    if (!this.props.disabled) {
-      this.initialY = evt.touches[0].clientY;
-    }
   };
 
   private handleTouchMove = (evt: TouchEvent) => {
@@ -138,6 +133,8 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       return;
     }
 
+    this.cancelEvent(evt);
+
     if (!draging) {
       this.setState({
         draging: true
@@ -147,7 +144,6 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
 
     const deltaY = this.damping(y - this.initialY);
 
-    this.cancelEvent(evt);
     this.updateOffset(deltaY);
 
     if (deltaY < this.props.distanceToRefresh!) {
@@ -290,7 +286,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     }`.trim();
 
     const bodyStyle: React.CSSProperties = {
-      transform: `translate3d(0, ${offset}px, 0)`
+      transform: `translate3d(0, ${offset}px, 0px)`
     };
     const normalIndicatorStyle: React.CSSProperties = {
       height: distanceToRefresh,
@@ -314,13 +310,13 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
             {!custom && (
               <View
                 style={normalIndicatorStyle}
-                className={`zyouh-list__indicator-container ${showRefreshText ? 'zyouh-list__indicator-container--row': ''}`.trim()}
+                className={`zyouh-list__indicator-container ${
+                  showRefreshText ? 'zyouh-list__indicator-container--row' : ''
+                }${
+                  status === REFRESH_STATUS.RELEASE ? ' flashing' : ''
+                }`.trim()}
               >
-                <View
-                  className={`zyouh-list__indicator zyouh-list__indicator--dot ${
-                    status === REFRESH_STATUS.RELEASE ? 'flashing' : ''
-                  }`.trim()}
-                >
+                <View className='zyouh-list__indicator zyouh-list__indicator--dot'>
                   <View className='zyouh-list__indicator-dot'></View>
                   <View className='zyouh-list__indicator-dot'></View>
                   <View className='zyouh-list__indicator-dot'></View>

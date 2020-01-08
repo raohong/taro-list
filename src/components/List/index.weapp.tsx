@@ -1,14 +1,13 @@
 import Taro, { PureComponent } from '@tarojs/taro';
 import { View, ScrollView } from '@tarojs/components';
 
+import { ListProps, ListPropTypes } from './types';
 import {
-  ListProps,
   MAX_REFRESHING_TIME,
   HEIGHT,
   DISTANCE_TO_REFRESH,
-  DAMPING,
-  ListPropTypes
-} from './types';
+  DAMPING
+} from './config';
 import { normalizeValue, normalizeStyle } from './VirtualList/utils';
 import VirtualList from './VirtualList';
 import throttle from './lodash.throttle';

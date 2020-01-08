@@ -209,26 +209,19 @@ export class VirtualList extends PureComponent<VirtualListProps> {
   };
 
   render() {
-    const { width, height, scrollDirection } = this.props;
+    const { width, scrollDirection } = this.props;
 
     const totalSize = this.sizeAndPositionManager
       ? this.sizeAndPositionManager.getTotalSize()
       : 0;
-    const outterStyle = normalizeStyle({
-      width,
-      height
-    });
 
     const innerStyle = {
       ...STYLE_INNER,
+      width,
       [sizeProp[scrollDirection!]]: normalizeValue(totalSize)
     };
 
-    return (
-      <View style={outterStyle}>
-        <View style={innerStyle}>{this.props.children}</View>
-      </View>
-    );
+    return <View style={innerStyle}>{this.props.children}</View>;
   }
 
   private recomputeSizes = (index: number = 0) => {

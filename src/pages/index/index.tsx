@@ -54,7 +54,7 @@ export default class Index extends Taro.Component<any, IndexState> {
   };
 
   handleRefresh = cb => {
-    this.fetch()
+    this.fetch().then(cb);
   };
 
   handleBlur = evt => {
@@ -101,7 +101,7 @@ export default class Index extends Taro.Component<any, IndexState> {
             className='input'
             placeholder='输入 scrollToIndex'
             type='number'
-            value={scrollIndex}
+            value={String(scrollIndex || '')}
             onBlur={this.handleBlur}
           />
         </View>
@@ -110,14 +110,14 @@ export default class Index extends Taro.Component<any, IndexState> {
           onLoadmore={this.fetch}
           virtual
           scrollToIndex={scrollIndex}
-          height='85vh'
+          height='90vh'
           dataManager={this.dataManager}
         >
           {list.map(item => (
             <View
               key={item.item.id}
               style={{
-                padding: '10px 10px 10px',
+                padding: '10px',
                 overflow: 'hidden',
                 backgroundColor: '#f4f4f4',
                 ...item.style
@@ -125,7 +125,7 @@ export default class Index extends Taro.Component<any, IndexState> {
             >
               <View
                 style={{
-                  padding: '10px',
+                  padding: '12px',
                   display: 'flex',
                   backgroundColor: '#fff',
                   borderRadius: '5px'

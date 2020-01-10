@@ -83,7 +83,8 @@ declare namespace TaroVirtualList {
     onChange: VirutalListDataManagerChangeHandler<T>;
   }
 
-  interface VirutalListDataManagerProto<T> {
+  export class VirutalListDataManager<T = any> {
+    constructor(options: VirutalListDataManagerOptions<T>);
     updateConfig: (config: Partial<VirutalListDataManagerOptions<T>>) => void;
     clear: () => void;
     push: (...value: T[]) => number;
@@ -92,12 +93,6 @@ declare namespace TaroVirtualList {
     get: () => T[];
     pop: () => T | undefined;
     forceUpdate: () => void;
-  }
-
-  export interface VirutalListDataManager<T = any> {
-    new (
-      options: VirutalListDataManagerOptions<T>
-    ): VirutalListDataManagerProto<T>;
   }
 }
 

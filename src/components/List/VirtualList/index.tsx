@@ -174,7 +174,11 @@ export class VirtualList extends PureComponent<VirtualListProps> {
 
   private update = (data: any[]) => {
     const items: VirutalListItemData[] = [];
-    const { overscan, stickyIndices } = this.props.dataManager.__getState();
+    const {
+      overscan,
+      stickyIndices,
+      column
+    } = this.props.dataManager.__getState();
 
     const { start, end } = this.sizeAndPositionManager.getVisibleRange({
       containerSize: this.getContainerSize(),
@@ -188,7 +192,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
           items.push({
             index: i,
             style: this.getStyle(i, true),
-            item: data[i]
+            item: data.slice(i, i + column)
           })
         );
       }
@@ -200,12 +204,14 @@ export class VirtualList extends PureComponent<VirtualListProps> {
         items.push({
           index: i,
           style: this.getStyle(i),
-          item: data[i]
+          item: data.slice(i, i + column)
         });
       }
     }
 
-    return items;
+    return column === 1
+      ? items.map(dataItem => ({ ...dataItem, item: dataItem.item[0] }))
+      : items;
   };
 
   render() {

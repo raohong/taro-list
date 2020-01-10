@@ -31,6 +31,8 @@ export const DEFAULT_ZINDEX = 10;
 
 export const DEFAULT_OVERSCAN = 3;
 
+export const DEFAULT_COLUMN = 1;
+
 export interface CellCacheItem {
   width: number;
   height: number;

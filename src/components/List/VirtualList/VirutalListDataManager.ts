@@ -1,7 +1,12 @@
 import Taro from '@tarojs/taro';
 import isEqual from 'lodash.isequal';
 import { ItemStyle } from '.';
-import { ItemSize, DEFAULT_ITEMSIZE, DEFAULT_OVERSCAN } from './types';
+import {
+  ItemSize,
+  DEFAULT_ITEMSIZE,
+  DEFAULT_OVERSCAN,
+  DEFAULT_COLUMN
+} from './types';
 
 interface SizeAndPositionOfItemData {
   index: number;
@@ -30,25 +35,82 @@ export interface VirutalListDataManagerOptions<T> {
   estimatedSize?: number;
   stickyIndices?: number[];
   overscan?: number;
+  column?: number;
   onChange: VirutalListDataManagerChangeHandler<T>;
+}
+
+export interface ILoadStatusResult<T> {
+  clearAndAddData: (...values: T[]) => void;
 }
 
 export interface VirutalListDataManagerState<T> {
   data: T[];
   itemSize: ItemSize;
   overscan: number;
+  column: number;
   itemCount: number;
   estimatedSize: number;
   stickyIndices: number[];
   onChange: VirutalListDataManagerChangeHandler<T>;
 }
 
+let index = 0;
+
+export const VIRTUAL_LIST_DATA_MANAGER_FLAG = 'VIRTUAL_LIST_DATA_MANAGER_FLAG';
+
+const generateId = () => `__${index++}__${VIRTUAL_LIST_DATA_MANAGER_FLAG}`;
 const RATIO = Taro.getSystemInfoSync().windowWidth / 375;
+const LOAD_ITEM_DATA_ID = 'LOAD_ITEM_DATA_ID';
 
 const defaultOptions: Omit<VirutalListDataManagerOptions<any>, 'onChange'> = {
   estimatedSize: DEFAULT_ITEMSIZE,
   itemSize: DEFAULT_ITEMSIZE,
-  overscan: DEFAULT_OVERSCAN
+  overscan: DEFAULT_OVERSCAN,
+  column: DEFAULT_COLUMN
+};
+
+const getItemCount = <T>(data: T[], column: number) => {
+  const length = data.length;
+
+  if (column === 1) {
+    return length;
+  }
+
+  let total = 0;
+  let i = 0;
+
+  while (i < length) {
+    // 这里过滤掉用户可能传入的基本数据
+    if (typeof data[i] !== 'object' && data[i]) {
+      total += 1;
+      i++;
+      continue;
+    }
+
+    const type = data[i][VIRTUAL_LIST_DATA_MANAGER_FLAG];
+
+    // 状态点或者最后一个
+    if (type === VIRTUAL_LIST_DATA_MANAGER_FLAG || i === length - 1) {
+      total += 1;
+      i++;
+      continue;
+    }
+
+    let j = 1;
+
+    while (
+      j < column &&
+      data[i + j][VIRTUAL_LIST_DATA_MANAGER_FLAG] !==
+        VIRTUAL_LIST_DATA_MANAGER_FLAG
+    ) {
+      j++;
+    }
+
+    total += column;
+    i += j;
+  }
+
+  return total;
 };
 
 const itemSizeTransformer = (value: string | number): number => {
@@ -90,7 +152,8 @@ const keys: (keyof VirutalListDataManagerState<any>)[] = [
   'itemSize',
   'overscan',
   'stickyIndices',
-  'onChange'
+  'onChange',
+  'column'
 ];
 
 const getInitialState = <T>() => {
@@ -98,7 +161,7 @@ const getInitialState = <T>() => {
 
   Object.defineProperty(state, 'itemCount', {
     get() {
-      return state.data.length;
+      return getItemCount(state.data, state.column);
     }
   });
 
@@ -148,6 +211,70 @@ export class VirutalListDataManager<T = any> {
       this.__nextTickUpdate();
     }
   }
+
+  public setLoadStatus = (
+    itemSize: string | number,
+    customData: Record<string | number, any> = {}
+  ): ILoadStatusResult<T> => {
+    let inserted = false;
+
+    const id = generateId();
+    const loadStatusData = {
+      ...customData,
+      [LOAD_ITEM_DATA_ID]: id,
+      [VIRTUAL_LIST_DATA_MANAGER_FLAG]: VIRTUAL_LIST_DATA_MANAGER_FLAG
+    };
+
+    const currentFlag = this.get().length - 1;
+    const rawItemSize = this.__getState().itemSize;
+    const newItemSize = (index: number): number => {
+      if (index === currentFlag) {
+        return itemSizeTransformer(itemSize);
+      }
+
+      if (typeof rawItemSize === 'function') {
+        return rawItemSize(index);
+      }
+
+      return rawItemSize as number;
+    };
+
+    // @ts-ignore
+    this.push(loadStatusData);
+    this.updateConfig({
+      itemSize: newItemSize
+    });
+
+    const clearAndAddData = (...value: T[]) => {
+      if (inserted) {
+        return;
+      }
+
+      inserted = true;
+
+      this.push(...value);
+      this.updateConfig({
+        itemSize: rawItemSize
+      });
+    };
+
+    return {
+      clearAndAddData
+    };
+  };
+
+  public clearAllLoadStatus = (id?: string) => {
+    const data = this.get().filter(
+      item =>
+        item &&
+        typeof item === 'object' &&
+        (id
+          ? item[LOAD_ITEM_DATA_ID] === id
+          : item[LOAD_ITEM_DATA_ID] !== undefined)
+    );
+
+    this.set(data);
+  };
 
   public clear = () => {
     const { data, itemCount } = this.__state;

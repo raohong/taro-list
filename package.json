@@ -1,9 +1,10 @@
 {
   "name": "taro-list",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "基于 Taro 的列表刷新组件, 支持下拉刷新, 上拉加载, 虚拟列表",
   "main": "dist/index.js",
   "main:h5": "dist/h5/index.js",
+  "types": "./@types/index.d.ts",
   "templateInfo": {
     "name": "default",
     "typescript": true,
@@ -30,7 +31,7 @@
     "dev:qq": "npm run build:qq -- --watch",
     "dev:quickapp": "npm run build:quickapp -- --watch"
   },
-  "author": "",
+  "author": "raohong",
   "license": "MIT",
   "dependencies": {
     "lodash.isequal": "^4.5.0",

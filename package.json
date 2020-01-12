@@ -1,7 +1,6 @@
 {
   "name": "taro-list",
   "version": "0.1.0",
-  "private": true,
   "description": "taro-list",
   "main": "dist/index.js",
   "main:h5": "dist/h5/index.js",

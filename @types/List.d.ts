@@ -29,4 +29,4 @@ interface TaroListProps
   showRefreshText?: boolean;
 }
 
-declare class TaroList extends Taro.PureComponent<TaroListProps> {}
+export class TaroList extends Taro.PureComponent<TaroListProps> {}

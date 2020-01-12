@@ -177,7 +177,8 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     const {
       overscan,
       stickyIndices,
-      column
+      column,
+      itemCount
     } = this.props.dataManager.__getState();
 
     const { start, end } = this.sizeAndPositionManager.getVisibleRange({
@@ -187,7 +188,8 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     });
 
     if (start !== undefined && end !== undefined) {
-      if (Array.isArray(stickyIndices)) {
+
+      if (Array.isArray(stickyIndices) && column === 1) {
         stickyIndices.forEach(i =>
           items.push({
             index: i,
@@ -198,20 +200,25 @@ export class VirtualList extends PureComponent<VirtualListProps> {
       }
 
       for (let i = start; i <= end; i++) {
-        if (Array.isArray(stickyIndices) && stickyIndices.includes(i)) {
+        if (
+          Array.isArray(stickyIndices) &&
+          stickyIndices.includes(i) &&
+          column === 1
+        ) {
           continue;
         }
+
         items.push({
           index: i,
           style: this.getStyle(i),
-          item: data.slice(i, i + column)
+          item: data.slice(i * column, i * column + column)
         });
       }
     }
 
     return column === 1
       ? items.map(dataItem => ({ ...dataItem, item: dataItem.item[0] }))
-      : items;
+      : items.filter(item => item.item.length);
   };
 
   render() {
@@ -220,6 +227,9 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     const totalSize = this.sizeAndPositionManager
       ? this.sizeAndPositionManager.getTotalSize()
       : 0;
+
+
+
 
     const innerStyle = {
       ...STYLE_INNER,

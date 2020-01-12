@@ -40,6 +40,7 @@ export interface VirutalListDataManagerOptions<T> {
 }
 
 export interface ILoadStatusResult<T> {
+  id: string;
   clearAndAddData: (...values: T[]) => void;
 }
 
@@ -80,9 +81,10 @@ const getItemCount = <T>(data: T[], column: number) => {
   let i = 0;
 
   while (i < length) {
+    total += 1;
+
     // 这里过滤掉用户可能传入的基本数据
     if (typeof data[i] !== 'object' && data[i]) {
-      total += 1;
       i++;
       continue;
     }
@@ -91,8 +93,8 @@ const getItemCount = <T>(data: T[], column: number) => {
 
     // 状态点或者最后一个
     if (type === VIRTUAL_LIST_DATA_MANAGER_FLAG || i === length - 1) {
-      total += 1;
       i++;
+
       continue;
     }
 
@@ -100,13 +102,15 @@ const getItemCount = <T>(data: T[], column: number) => {
 
     while (
       j < column &&
-      data[i + j][VIRTUAL_LIST_DATA_MANAGER_FLAG] !==
-        VIRTUAL_LIST_DATA_MANAGER_FLAG
+      i + j < length &&
+      ((data[i + j] &&
+        data[i + j][VIRTUAL_LIST_DATA_MANAGER_FLAG] === undefined) ||
+        !data[i + j])
     ) {
+
       j++;
     }
 
-    total += column;
     i += j;
   }
 
@@ -198,7 +202,7 @@ export class VirutalListDataManager<T = any> {
 
     keys.forEach(key => {
       const item = config[key];
-      if (config[key]) {
+      if (config[key] !== undefined) {
         if (key !== 'onChange' && state[key] !== item) {
           needUpdated = true;
         }
@@ -213,7 +217,6 @@ export class VirutalListDataManager<T = any> {
   }
 
   public setLoadStatus = (
-    itemSize: string | number,
     customData: Record<string | number, any> = {}
   ): ILoadStatusResult<T> => {
     let inserted = false;
@@ -225,25 +228,8 @@ export class VirutalListDataManager<T = any> {
       [VIRTUAL_LIST_DATA_MANAGER_FLAG]: VIRTUAL_LIST_DATA_MANAGER_FLAG
     };
 
-    const currentFlag = this.get().length - 1;
-    const rawItemSize = this.__getState().itemSize;
-    const newItemSize = (index: number): number => {
-      if (index === currentFlag) {
-        return itemSizeTransformer(itemSize);
-      }
-
-      if (typeof rawItemSize === 'function') {
-        return rawItemSize(index);
-      }
-
-      return rawItemSize as number;
-    };
-
     // @ts-ignore
     this.push(loadStatusData);
-    this.updateConfig({
-      itemSize: newItemSize
-    });
 
     const clearAndAddData = (...value: T[]) => {
       if (inserted) {
@@ -252,13 +238,12 @@ export class VirutalListDataManager<T = any> {
 
       inserted = true;
 
+      this.clearAllLoadStatus(id);
       this.push(...value);
-      this.updateConfig({
-        itemSize: rawItemSize
-      });
     };
 
     return {
+      id,
       clearAndAddData
     };
   };
@@ -269,11 +254,15 @@ export class VirutalListDataManager<T = any> {
         item &&
         typeof item === 'object' &&
         (id
-          ? item[LOAD_ITEM_DATA_ID] === id
-          : item[LOAD_ITEM_DATA_ID] !== undefined)
+          ? item[LOAD_ITEM_DATA_ID] !== id
+          : item[LOAD_ITEM_DATA_ID] === undefined)
     );
 
     this.set(data);
+  };
+
+  public getItemCount = () => {
+    return this.__getState().itemCount;
   };
 
   public clear = () => {
@@ -325,7 +314,7 @@ export class VirutalListDataManager<T = any> {
   }
 
   public __getState() {
-    return this.__state;
+    return { ...this.__state, itemCount: this.__state.itemCount };
   }
 
   public __setUpdater = (cb: VirutalListDataManagerUpdater<T>) => {
@@ -377,20 +366,25 @@ export class VirutalListDataManager<T = any> {
   }
 
   private _triggerStateChange = (prevState: VirutalListDataManagerState<T>) => {
+    this._clearTimer();
+
     if (typeof this.__onStateChange === 'function') {
       this.__onStateChange(prevState);
     }
   };
 
   private _nextTick(cb: () => void) {
-    if (this.__timer) {
-      this.__timer = 0;
-      clearTimeout(this.__timer);
-    }
-
+    this._clearTimer();
     // @ts-ignore
     this.__timer = setTimeout(() => {
       cb();
     }, 0);
+  }
+
+  private _clearTimer() {
+    if (this.__timer) {
+      this.__timer = 0;
+      clearTimeout(this.__timer);
+    }
   }
 }

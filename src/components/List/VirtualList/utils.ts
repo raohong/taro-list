@@ -22,7 +22,7 @@ export const getItemSizeGetter = (
     }
 
     if (typeof itemSize === 'function') {
-      return itemSize[index];
+      return itemSize(index);
     }
 
     return Array.isArray(itemSize) ? itemSize[index] : itemSize;

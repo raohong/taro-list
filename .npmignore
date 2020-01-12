@@ -1,9 +1,10 @@
-dist/
-deploy_versions/
 .temp/
-.rn_temp/
 node_modules/
 __mocks__
-.DS_Store
 scripts
 config
+src
+.editorconfig
+.eslintrc
+.prettierrc
+global.d.ts

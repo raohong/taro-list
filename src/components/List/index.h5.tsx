@@ -206,7 +206,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     };
 
     this.clearRefreshTimer();
-    this.refreshTimer = window.setTimeout(() => {
+    this.refreshTimer =  window.setTimeout(() => {
       onEnd();
     }, MAX_REFRESHING_TIME);
 

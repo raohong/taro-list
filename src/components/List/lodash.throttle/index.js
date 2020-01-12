@@ -1,3 +1,6 @@
+//  lodash 使用了 root
+
+
 /**
  * lodash (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`

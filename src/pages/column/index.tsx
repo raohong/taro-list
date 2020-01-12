@@ -18,23 +18,26 @@ function getTopic(page: number) {
   });
 }
 
-interface ListState {
+interface ColumnListState {
   list: VirutalListItemData[];
 }
 
 type LoadStatus = 'none' | 'loadMore' | 'ended' | 'loading' | 'refreshing';
 
-export default class List extends Taro.Component<any, ListState> {
+const HEIGHT = '410rpx';
+
+export default class List extends Taro.Component<any, ColumnListState> {
   page = 1;
-  state: ListState = {
+  state: ColumnListState = {
     list: []
   };
 
   loadStatus: LoadStatus = 'none';
 
   dataManager = new VirutalListDataManager({
-    itemSize: '240rpx',
+    itemSize: HEIGHT,
     overscan: 5,
+    column: 2,
     onChange: data => {
       this.setState({
         list: data
@@ -62,7 +65,7 @@ export default class List extends Taro.Component<any, ListState> {
         const total = this.dataManager.get().length;
 
         this.dataManager.updateConfig({
-          itemSize: index => (index === total - 1 ? '140rpx' : '240rpx')
+          itemSize: index => (index === total - 1 ? '140rpx' : HEIGHT)
         });
         this.dataManager.setLoadStatus({
           type: 'ended'
@@ -83,11 +86,11 @@ export default class List extends Taro.Component<any, ListState> {
       type: 'loadMore'
     });
 
-    const length = this.dataManager.get().length;
+    const itemCount = this.dataManager.getItemCount();
 
     this.dataManager.updateConfig({
       itemSize: index => {
-        return index === length - 1 ? '140rpx' : '240rpx';
+        return index === itemCount - 1 ? '140rpx' : HEIGHT;
       }
     });
 
@@ -95,7 +98,7 @@ export default class List extends Taro.Component<any, ListState> {
       this.dataManager.clearAllLoadStatus();
       this.loadStatus = 'none';
       this.dataManager.updateConfig({
-        itemSize: '240rpx'
+        itemSize: HEIGHT
       });
     });
   };
@@ -108,13 +111,13 @@ export default class List extends Taro.Component<any, ListState> {
     this.page = 1;
     this.loadStatus = 'refreshing';
     this.dataManager.clearAllLoadStatus();
+    this.dataManager.updateConfig({
+      itemSize: HEIGHT
+    });
 
     this.fetch()
       .then(cb)
       .then(() => {
-        this.dataManager.updateConfig({
-          itemSize: '240rpx'
-        });
         this.loadStatus = 'none';
       });
   };
@@ -123,9 +126,11 @@ export default class List extends Taro.Component<any, ListState> {
     const { list } = this.state;
 
     list.forEach(item => {
-      if (!item.item.type) {
-        item.item.avatarUrl = `url(${item.item.author.avatar_url}) no-repeat center / cover`;
-      }
+      item.item.forEach(topic => {
+        if (!topic.type) {
+          topic.avatarUrl = `url(${topic.author.avatar_url}) no-repeat center / cover`;
+        }
+      });
     });
 
     return (
@@ -138,36 +143,40 @@ export default class List extends Taro.Component<any, ListState> {
           dataManager={this.dataManager}
         >
           {list.map(item =>
-            item.item.type === 'loadMore' ? (
+            item.item[0].type === 'loadMore' ? (
               <View className='loadStatus' style={item.style}>
                 加载更多...
               </View>
-            ) : item.item.type === 'ended' ? (
+            ) : item.item[0].type === 'ended' ? (
               <View className='loadStatus' style={item.style}>
                 没有更多了
               </View>
             ) : (
               <View
-                className='topic-item'
-                key={item.item.id}
                 style={{
                   ...item.style
                 }}
+                key={item.index}
+                className='topic-column'
               >
-                <View className='topic-item-inner'>
-                  <View
-                    style={{
-                      background: item.item.avatarUrl
-                    }}
-                    className='topic-item__avatar'
-                  />
-                  <View>
-                    <View className='topic-item__title'>
-                      #{item.index} - {item.item.title}
+                {item.item.map((topic, k) => (
+                  <View className='topic-item' key={topic.id}>
+                    <View className='topic-item-inner'>
+                      <View
+                        style={{
+                          background: topic.avatarUrl
+                        }}
+                        className='topic-item__avatar'
+                      />
+                      <View className='topic-item__main'>
+                        <View className='topic-item__title'>
+                          #{item.index * 2 + k} - {topic.title}
+                        </View>
+                        <View>{topic.author.loginname}</View>
+                      </View>
                     </View>
-                    <View>{item.item.author.loginname}</View>
                   </View>
-                </View>
+                ))}
               </View>
             )
           )}

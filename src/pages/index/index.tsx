@@ -1,12 +1,12 @@
 import Taro from '@tarojs/taro';
-import { View, Input } from '@tarojs/components';
+import { View } from '@tarojs/components';
 
 import './index.less';
 
 export default () => {
   const menus = [
     {
-      title: '普通下拉加载数据',
+      title: '普通虚拟列表',
       url: '/pages/normal/index'
     },
     {

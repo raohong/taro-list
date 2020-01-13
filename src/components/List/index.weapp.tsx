@@ -229,4 +229,4 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
   }
 }
 
-export { TaroList, VirutalListDataManager };
+export { VirutalListDataManager };

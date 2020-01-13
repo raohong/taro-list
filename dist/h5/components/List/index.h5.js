@@ -5,6 +5,7 @@ import VirtualList from "./VirtualList/index";
 import { ListPropTypes } from './types';
 import { MAX_REFRESHING_TIME, HEIGHT, DISTANCE_TO_REFRESH, DAMPING, REFRESH_STATUS, REFRESH_STATUS_TEXT } from './config';
 import { ComponentResizeObserver } from './ComponentResizeObserver';
+import { VirutalListDataManager } from './VirtualList/VirutalListDataManager';
 import './index.less';
 const opts = {
   passive: false
@@ -257,3 +258,4 @@ TaroList.options = {
   addGlobalClass: true
 };
 TaroList.index = 0;
+export { TaroList, VirutalListDataManager };

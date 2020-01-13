@@ -11,6 +11,7 @@ import {
 import { normalizeValue, normalizeStyle } from './VirtualList/utils';
 import VirtualList from './VirtualList';
 import throttle from './lodash.throttle';
+import { VirutalListDataManager } from './VirtualList/VirutalListDataManager';
 import './index.less';
 
 interface ListWeappState {
@@ -227,3 +228,5 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
     );
   }
 }
+
+export { TaroList, VirutalListDataManager };

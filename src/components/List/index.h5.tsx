@@ -12,6 +12,7 @@ import {
   REFRESH_STATUS_TEXT
 } from './config';
 import { ComponentResizeObserver } from './ComponentResizeObserver';
+import { VirutalListDataManager } from './VirtualList/VirutalListDataManager';
 import './index.less';
 
 interface ListState {
@@ -206,7 +207,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     };
 
     this.clearRefreshTimer();
-    this.refreshTimer =  window.setTimeout(() => {
+    this.refreshTimer = window.setTimeout(() => {
       onEnd();
     }, MAX_REFRESHING_TIME);
 
@@ -385,3 +386,5 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     return (this.rootNode && Math.floor(this.rootNode.scrollTop)) || 0;
   }
 }
+
+export { TaroList, VirutalListDataManager };

@@ -11,7 +11,7 @@ type ExcludeProps =
   | 'onOffsetChange'
   | 'dataManager';
 
-interface TaroListProps
+export interface TaroListProps
   extends Omit<TaroVirutalList.VirtualListProps, ExcludeProps> {
   height?: number | string;
   className?: string;

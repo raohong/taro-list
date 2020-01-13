@@ -1,12 +1,12 @@
-export namespace TaroVirutalList {
-  export enum ALIGN {
+declare namespace TaroVirutalList {
+  enum ALIGN {
     START = 'start',
     END = 'end',
     CENTER = 'center',
     Auto = 'auto'
   }
 
-  export enum DIRECTION {
+  enum DIRECTION {
     VERTICAL = 'vertical',
     HORIZONTAL = 'horizontal'
   }
@@ -44,8 +44,6 @@ export namespace TaroVirutalList {
     style: ItemStyle;
   }
 
-  export class VirutalList extends Taro.PureComponent<VirtualListProps> {}
-
   export interface VirutalListItemData<T = any>
     extends SizeAndPositionOfItemData {
     item: T;
@@ -65,7 +63,7 @@ export namespace TaroVirutalList {
     data: T[]
   ) => VirutalListItemData<T>[];
 
-  export interface VirutalListDataManagerOptions<T> {
+  interface VirutalListDataManagerOptions<T> {
     itemSize?: MiniItemSize;
     estimatedSize?: number;
     stickyIndices?: number[];
@@ -73,7 +71,7 @@ export namespace TaroVirutalList {
     onChange: VirutalListDataManagerChangeHandler<T>;
   }
 
-  export interface VirutalListDataManagerState<T> {
+  interface VirutalListDataManagerState<T> {
     data: T[];
     itemSize: ItemSize;
     overscan: number;
@@ -85,7 +83,9 @@ export namespace TaroVirutalList {
 
   export class VirutalListDataManager<T = any> {
     constructor(options: VirutalListDataManagerOptions<T>);
+
     updateConfig: (config: Partial<VirutalListDataManagerOptions<T>>) => void;
+    getItemCount: () => number;
     clear: () => void;
     push: (...value: T[]) => number;
     set: (...value: T[]) => void;
@@ -96,4 +96,4 @@ export namespace TaroVirutalList {
   }
 }
 
-export default TaroVirutalList;
+export const VirutalListDataManager: TaroVirutalList.VirutalListDataManager;

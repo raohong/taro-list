@@ -68,11 +68,13 @@ declare namespace TaroVirutalList {
     estimatedSize?: number;
     stickyIndices?: number[];
     overscan?: number;
+    column?: number;
     onChange: VirutalListDataManagerChangeHandler<T>;
   }
 
   interface VirutalListDataManagerState<T> {
     data: T[];
+    column: number;
     itemSize: ItemSize;
     overscan: number;
     itemCount: number;
@@ -81,9 +83,7 @@ declare namespace TaroVirutalList {
     onChange: VirutalListDataManagerChangeHandler<T>;
   }
 
-  export class VirutalListDataManager<T = any> {
-    constructor(options: VirutalListDataManagerOptions<T>);
-
+  interface VirutalListDataManagerPropto<T> {
     updateConfig: (config: Partial<VirutalListDataManagerOptions<T>>) => void;
     getItemCount: () => number;
     clear: () => void;
@@ -94,6 +94,14 @@ declare namespace TaroVirutalList {
     pop: () => T | undefined;
     forceUpdate: () => void;
   }
+
+  export interface VirutalListDataManager<T = any> {
+    new (
+      options: VirutalListDataManagerOptions<T>
+    ): VirutalListDataManagerPropto<T>;
+  }
 }
 
 export const VirutalListDataManager: TaroVirutalList.VirutalListDataManager;
+
+export type VirutalListItemData = TaroVirutalList.VirutalListItemData;

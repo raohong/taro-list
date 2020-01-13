@@ -1,6 +1,6 @@
-import { TaroList, TaroListProps } from './List.d';
-import { VirutalListDataManager } from './VirutalList.d';
+import { TaroList } from './List.d';
+import { VirutalListDataManager, VirutalListItemData } from './VirutalList.d';
 
 export default TaroList;
 
-export { TaroList, VirutalListDataManager, TaroListProps };
+export { TaroList, VirutalListDataManager, VirutalListItemData };

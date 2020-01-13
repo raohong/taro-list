@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { VirtualListProps } from './VirtualList';
-import { VirutalListDataManager } from './VirtualList/VirutalListDataManager';
+import { VirutalListDataManager } from '../VirutalListDataManager';
 
 export type ExcludeProps =
   | 'height'

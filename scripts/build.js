@@ -26,7 +26,12 @@ function exec() {
 
   const content = fs.readFileSync(indexFile).toString();
 
-  fs.writeFileSync(indexFile, content.replace('h5', 'weapp'));
+  fs.writeFileSync(
+    path.join(root, 'dist/weapp/index.js'),
+    content.replace('h5', 'weapp')
+  );
+
+  fs.unlinkSync(indexFile);
 }
 
 exec();

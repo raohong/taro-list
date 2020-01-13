@@ -1,6 +1,6 @@
 {
   "name": "taro-list",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "基于 Taro 的列表刷新组件, 支持下拉刷新, 上拉加载, 虚拟列表",
   "main": "dist/index.js",
   "main:h5": "dist/h5/index.js",
@@ -32,7 +32,14 @@
     "dev:quickapp": "npm run build:quickapp -- --watch"
   },
   "author": "raohong",
-  "license": "MIT",
+  "homepage": "https://github.com/raohong/taro-list#readme",
+  "keywords": [
+    "taro"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raohong/taro-list.git"
+  },
   "dependencies": {
     "lodash.isequal": "^4.5.0",
     "prop-types": "^15.7.2",

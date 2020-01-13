@@ -177,8 +177,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     const {
       overscan,
       stickyIndices,
-      column,
-      itemCount
+      column
     } = this.props.dataManager.__getState();
 
     const { start, end } = this.sizeAndPositionManager.getVisibleRange({
@@ -188,7 +187,6 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     });
 
     if (start !== undefined && end !== undefined) {
-
       if (Array.isArray(stickyIndices) && column === 1) {
         stickyIndices.forEach(i =>
           items.push({
@@ -227,10 +225,6 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     const totalSize = this.sizeAndPositionManager
       ? this.sizeAndPositionManager.getTotalSize()
       : 0;
-
-
-
-
     const innerStyle = {
       ...STYLE_INNER,
       width,

@@ -20,7 +20,7 @@ import {
   VirutalListDataManager,
   VirutalListItemData,
   VirutalListDataManagerState
-} from './VirutalListDataManager';
+} from '../../VirutalListDataManager';
 
 const STYLE_INNER: React.CSSProperties = {
   position: 'relative'

@@ -103,11 +103,9 @@ const getItemCount = <T>(data: T[], column: number) => {
     while (
       j < column &&
       i + j < length &&
-      ((data[i + j] &&
-        data[i + j][VIRTUAL_LIST_DATA_MANAGER_FLAG] === undefined) ||
+      (data[i + j][VIRTUAL_LIST_DATA_MANAGER_FLAG] === undefined ||
         !data[i + j])
     ) {
-
       j++;
     }
 

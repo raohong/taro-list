@@ -12,6 +12,25 @@ yarn add taro-list
 
 快速使用
 
+1. 配置文件里添加
+
+```
+ copy: {
+    patterns: [
+      {
+        from:  'node_modules/taro-list/dist/weapp/components/List/refresh.wxs',
+        to:  'dist/npm/taro-list/dist/weapp/components/List/refresh.wxs',
+      },
+      {
+        from:  'node_modules/taro-list/dist/weapp/components/List/index.template.wxml',
+        to:  'dist/npm/taro-list/dist/weapp/components/List/index.template.wxml',
+      }
+    ]
+  },
+```
+
+2.
+
 ```tsx
 
 import Taro  from '@tarojs/taro';

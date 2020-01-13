@@ -1,4 +1,4 @@
-import TaroVirutalList from './VirutalList';
+import { TaroVirutalList } from './VirutalList';
 
 type ExcludeProps =
   | 'height'
@@ -8,7 +8,8 @@ type ExcludeProps =
   | 'style'
   | 'scrollDirection'
   | 'scrollOffset'
-  | 'onOffsetChange';
+  | 'onOffsetChange'
+  | 'dataManager';
 
 interface TaroListProps
   extends Omit<TaroVirutalList.VirtualListProps, ExcludeProps> {
@@ -26,6 +27,7 @@ interface TaroListProps
   enableBackToTop?: boolean;
   scrollWithAnimation?: boolean;
   disabled?: boolean;
+  dataManager?: TaroVirutalList.VirutalListDataManager;
   showRefreshText?: boolean;
 }
 

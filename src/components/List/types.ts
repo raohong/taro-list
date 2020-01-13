@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { VirtualListProps } from './VirtualList';
+import { VirutalListDataManager } from './VirtualList/VirutalListDataManager';
 
 export type ExcludeProps =
   | 'height'
@@ -9,7 +10,8 @@ export type ExcludeProps =
   | 'style'
   | 'scrollDirection'
   | 'scrollOffset'
-  | 'onOffsetChange';
+  | 'onOffsetChange'
+  | 'dataManager';
 
 export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   height?: number | string;
@@ -27,6 +29,7 @@ export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   scrollWithAnimation?: boolean;
   disabled?: boolean;
   showRefreshText?: boolean;
+  dataManager?: VirutalListDataManager;
 }
 
 export const ListPropTypes: React.WeakValidationMap<ListProps> = {
@@ -41,5 +44,6 @@ export const ListPropTypes: React.WeakValidationMap<ListProps> = {
   showRefreshText: PropTypes.bool,
   custom: PropTypes.bool,
   scrollToIndex: PropTypes.number,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  dataManager: PropTypes.instanceOf(VirutalListDataManager)
 };

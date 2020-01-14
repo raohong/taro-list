@@ -1,6 +1,6 @@
 {
   "name": "taro-list",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "基于 Taro 的列表刷新组件, 支持下拉刷新, 上拉加载, 虚拟列表",
   "main": "dist/index.js",
   "main:h5": "dist/h5/index.js",
@@ -43,7 +43,8 @@
   "dependencies": {
     "lodash.isequal": "^4.5.0",
     "prop-types": "^15.7.2",
-    "resize-observer-polyfill": "^1.5.1"
+    "resize-observer-polyfill": "^1.5.1",
+    "taro-list-data-manager": "^0.2.0"
   },
   "husky": {
     "hooks": {

@@ -1,6 +1,11 @@
 import Taro, { PureComponent } from '@tarojs/taro';
 import PropTypes from 'prop-types';
 import { View } from '@tarojs/components';
+import {
+  VirutalListDataManager,
+  VirutalListItemData,
+  VirutalListDataManagerState
+} from 'taro-list-data-manager';
 
 import {
   DIRECTION,
@@ -16,11 +21,6 @@ import {
   normalizeStyle,
   normalizeValue
 } from './utils';
-import {
-  VirutalListDataManager,
-  VirutalListItemData,
-  VirutalListDataManagerState
-} from '../../VirutalListDataManager';
 
 const STYLE_INNER: React.CSSProperties = {
   position: 'relative'

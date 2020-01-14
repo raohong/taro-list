@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
+import { VirutalListDataManager } from 'taro-list-data-manager';
 import { VirtualListProps } from './VirtualList';
-import { VirutalListDataManager } from '../VirutalListDataManager';
 
 export type ExcludeProps =
   | 'height'

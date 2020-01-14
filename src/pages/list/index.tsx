@@ -1,11 +1,10 @@
 import Taro from '@tarojs/taro';
 import { View, Image } from '@tarojs/components';
-
-import TaroList from '../../components/List/index';
 import {
   VirutalListDataManager,
   VirutalListItemData
-} from '../../components/List/VirtualList/VirutalListDataManager';
+} from 'taro-list-data-manager';
+import TaroList from '../../components/List/index';
 import './index.less';
 
 function getTopic(page: number) {
@@ -40,7 +39,7 @@ export default class List extends Taro.Component<any, ListState> {
         list: data
       });
     }
-  });
+  }, Taro);
 
   componentDidMount() {
     this.fetch();
@@ -129,7 +128,7 @@ export default class List extends Taro.Component<any, ListState> {
     });
 
     return (
-      <View className='page'>
+      <View className='page list-page'>
         <TaroList
           onRefresh={this.handleRefresh}
           onLoadmore={this.handleLoadMore}

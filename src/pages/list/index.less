@@ -1,38 +1,39 @@
-.topic-item {
-  padding: 20px;
-
-  &-inner {
+.list-page {
+  .topic-item {
     padding: 20px;
-    height: 200px;
-    display: flex;
-    background-color: #fff;
+
+    &-inner {
+      padding: 20px;
+      height: 200px;
+      display: flex;
+      background-color: #fff;
+    }
+
+    &__avatar {
+      width: 120px;
+      height: 120px;
+      margin-right: 20px;
+      flex-shrink: 0;
+      border-radius: 8px;
+    }
+
+    &__title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      margin-bottom: 10px;
+      -webkit-line-clamp: 2;
+      font-size: 30px;
+      /* autoprefixer: off */
+      -webkit-box-orient: vertical;
+      /* autoprefixer: on */
+    }
   }
 
-  &__avatar {
-    width: 120px;
-    height: 120px;
-    margin-right: 20px;
-    flex-shrink: 0;
-    border-radius: 8px;
+  .loadStatus {
+    text-align: center;
+    color: #999;
+    height: 140px;
+    line-height: 140px;
   }
-
-  &__title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    margin-bottom: 10px;
-    -webkit-line-clamp: 2;
-    font-size: 30px;
-    /* autoprefixer: off */
-    -webkit-box-orient: vertical;
-    /* autoprefixer: on */
-  }
-}
-
-
-.loadStatus {
-  text-align: center;
-  color: #999;
-  height: 140px;
-  line-height: 140px;
 }

@@ -1,11 +1,11 @@
 import Taro from '@tarojs/taro';
 import { View, Input } from '@tarojs/components';
-
-import TaroList from '../../components/List/index';
 import {
   VirutalListDataManager,
   VirutalListItemData
-} from '../../components/List/VirtualList/VirutalListDataManager';
+} from 'taro-list-data-manager';
+import TaroList from '../../components/List/index';
+
 import './index.less';
 
 interface NormalListState {
@@ -27,7 +27,7 @@ export default class List extends Taro.Component<any, NormalListState> {
         list: data
       });
     }
-  });
+  }, Taro);
   componentWillMount() {
     for (let i = 0; i < 10; i++) {
       this.add(i * 200);

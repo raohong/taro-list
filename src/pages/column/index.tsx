@@ -1,11 +1,11 @@
 import Taro from '@tarojs/taro';
-import { View, Image } from '@tarojs/components';
-
-import TaroList from '../../components/List/index';
+import { View } from '@tarojs/components';
 import {
   VirutalListDataManager,
   VirutalListItemData
-} from '../../components/List/VirtualList/VirutalListDataManager';
+} from 'taro-list-data-manager';
+import TaroList from '../../components/List/index';
+
 import './index.less';
 
 function getTopic(page: number) {
@@ -26,6 +26,7 @@ type LoadStatus = 'none' | 'loadMore' | 'ended' | 'loading' | 'refreshing';
 
 const HEIGHT = '410rpx';
 
+
 export default class List extends Taro.Component<any, ColumnListState> {
   page = 1;
   state: ColumnListState = {
@@ -34,19 +35,23 @@ export default class List extends Taro.Component<any, ColumnListState> {
 
   loadStatus: LoadStatus = 'none';
 
-  dataManager = new VirutalListDataManager({
-    itemSize: HEIGHT,
-    overscan: 5,
-    column: 2,
-    onChange: data => {
-      this.setState({
-        list: data
-      });
-    }
-  });
+  dataManager = new VirutalListDataManager(
+    {
+      itemSize: HEIGHT,
+      overscan: 5,
+      column: 2,
+      onChange: data => {
+        this.setState({
+          list: data
+        });
+      }
+    },
+    Taro
+  );
 
   componentDidMount() {
     this.fetch();
+
   }
 
   fetch = () => {
@@ -134,7 +139,7 @@ export default class List extends Taro.Component<any, ColumnListState> {
     });
 
     return (
-      <View className='page'>
+      <View className='page column-page'>
         <TaroList
           onRefresh={this.handleRefresh}
           onLoadmore={this.handleLoadMore}

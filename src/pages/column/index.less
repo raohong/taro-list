@@ -1,59 +1,61 @@
-.topic-column {
-  height: 410px;
-  display: flex;
-  align-items: center;
-}
-
-.topic-item {
-  width: 50%;
-  padding: 10px;
-  height: 100%;
-
-  &-inner {
-    background-color: #fff;
+.column-page {
+  .topic-column {
+    height: 410px;
     display: flex;
-    border-radius: 10px;
-    height: 390px;
-    flex-direction: column;
     align-items: center;
-    padding-top: 10px;
   }
 
-  &:first-child {
-    padding-left: 20px;
-  }
-  &:last-child {
-    padding-right: 20px;
-  }
-
-  &__avatar {
-    width: 200px;
-    height: 200px;
-    margin-bottom: 20px;
-    flex-shrink: 0;
-    border-radius: 8px;
-  }
-
-  &__main {
+  .topic-item {
+    width: 50%;
     padding: 10px;
+    height: 100%;
+
+    &-inner {
+      background-color: #fff;
+      display: flex;
+      border-radius: 10px;
+      height: 390px;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 10px;
+    }
+
+    &:first-child {
+      padding-left: 20px;
+    }
+    &:last-child {
+      padding-right: 20px;
+    }
+
+    &__avatar {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+      border-radius: 8px;
+    }
+
+    &__main {
+      padding: 10px;
+    }
+
+    &__title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      margin-bottom: 10px;
+      -webkit-line-clamp: 2;
+      font-size: 30px;
+      /* autoprefixer: off */
+      -webkit-box-orient: vertical;
+      /* autoprefixer: on */
+    }
   }
 
-  &__title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    margin-bottom: 10px;
-    -webkit-line-clamp: 2;
-    font-size: 30px;
-    /* autoprefixer: off */
-    -webkit-box-orient: vertical;
-    /* autoprefixer: on */
+  .loadStatus {
+    text-align: center;
+    color: #999;
+    height: 140px;
+    line-height: 140px;
   }
-}
-
-.loadStatus {
-  text-align: center;
-  color: #999;
-  height: 140px;
-  line-height: 140px;
 }

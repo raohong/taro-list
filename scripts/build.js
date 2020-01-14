@@ -29,9 +29,16 @@ function exec() {
   fs.writeFileSync(
     path.join(root, 'dist/weapp/index.js'),
     content
-      .replace('h5', 'weapp.tsx')
+      .replace('h5', 'tsx')
       .replace('/VirutalListDataManager', '/VirutalListDataManager.ts')
   );
+
+  const weappIndex = path.join(
+    root,
+    'dist/weapp/components/List/index.weapp.tsx'
+  );
+
+  fs.renameSync(weappIndex, weappIndex.replace('.weapp', ''));
 
   fs.unlinkSync(indexFile);
 }

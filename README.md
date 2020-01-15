@@ -1,16 +1,16 @@
 # taro-list
 
-> 支持下拉刷新 、 加载更多 、虚拟列表 (组件没法同时更新样式, 暂不支持动态大小)
+> 支持下拉刷新 、 加载更多 、虚拟列表
 
 ## 安装及使用
 
 ```
 npm i taro-list
-# or
-yarn add taro-list
+npm i taro-list-data-manager
+
 ```
 
-快速使用
+[h5 demo](https://raohong.github.io/taro-list/dist/index.html)
 
 1. 配置文件里添加
 
@@ -29,7 +29,7 @@ yarn add taro-list
   },
 ```
 
-2.
+2. 使用
 
 ```tsx
 
@@ -49,9 +49,9 @@ export default Index() => {
 
 ```
 
-## 属性
+具体使用可查看 [https://github.com/raohong/taro-list/tree/master/src/pages](https://github.com/raohong/taro-list/tree/master/src/pages)
 
-### TaroList
+### taro-list
 
 |        属性         |              类型               |    默认值    | 必填                    | 说明                                          |
 | :-----------------: | :-----------------------------: | :----------: | ----------------------- | --------------------------------------------- |
@@ -72,79 +72,6 @@ export default Index() => {
 |    scrollToIndex    |             number              |              | 否                      | 容器滚动 item index                           |
 |        align        |              ALIGN              | ALIGN.CENTER | 否                      | 设置 scrollToIndex 滚动时滚动值对其方式       |
 
-### VirtualListDataManager
+### taro-list-data-manager
 
-> 虚拟列表数据管理类， 启用虚拟滚动时必传
-
-#### 使用方式
-
-```ts
-const dataManager = new VirutalListDataManager({
-  itemSize: 120,
-  onChange: data => {
-    this.setState({
-      list: data
-    });
-  }
-});
-```
-
-#### API
-
-```ts
-class VirutalListDataManager<T = any> {
-  // 初始化参数
-  constructor(options: VirutalListDataManagerOptions<T>);
-  // 更新配置 参数等同 options
-  updateConfig: (config: Partial<VirutalListDataManagerOptions<T>>) => void;
-  // 清空数据
-  clear: () => void;
-  // push 数据 同 Array.prototype.push
-  push: (...value: T[]) => number;
-  // 设置数据
-  set: (...value: T[]) => void;
-  // 删除或者增加数据, 同 Array.prototype.splice
-  splice: (start: number, deleteCount: number, ...items: T[]) => T[];
-  // 获取整个数据
-  get: () => T[];
-  // 同 Array.prototype.pop
-  pop: () => T | undefined;
-  // 更新 Virtual List
-  forceUpdate: () => void;
-}
-
-// 初始化参数
-interface VirutalListDataManagerOptions<T> {
-  // 虚拟列表项目每个大小, 支持 number / string / number[] / string[] / () => string[] | number[] , 默认 50
-  itemSize?: MiniItemSize;
-  // 项目估算大小 默认 50
-  estimatedSize?: number;
-  // sticky 数组, 通过 sticky 定位实现
-  stickyIndices?: number[];
-  // 提前渲染项目数量, 增大可避免快速滚动白屏, 默认 3
-  overscan?: number;
-  // 必传, 将当前要渲染的数据更新
-  onChange: VirutalListDataManagerChangeHandler<T>;
-}
-
-type MiniItemSizeValue = string | number;
-type MiniItemSize =
-  | MiniItemSizeValue
-  | MiniItemSizeValue[]
-  | ((index: number) => MiniItemSizeValue);
-
-interface SizeAndPositionOfItemData {
-  index: number;
-  style: ItemStyle;
-}
-
-interface VirutalListItemData<T = any> extends SizeAndPositionOfItemData {
-  item: T;
-}
-
-type VirutalListDataManagerChangeHandler<T> = (
-  items: VirutalListItemData<T>[]
-) => void;
-
-type VirutalListDataManagerUpdater<T> = (data: T[]) => VirutalListItemData<T>[];
-```
+taro-list-data-manager 文档 [https://github.com/raohong/taro-list-data-manager](https://github.com/raohong/taro-list-data-manager)

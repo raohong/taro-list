@@ -26,7 +26,6 @@ type LoadStatus = 'none' | 'loadMore' | 'ended' | 'loading' | 'refreshing';
 
 const HEIGHT = '410rpx';
 
-
 export default class List extends Taro.Component<any, ColumnListState> {
   page = 1;
   state: ColumnListState = {
@@ -51,17 +50,20 @@ export default class List extends Taro.Component<any, ColumnListState> {
 
   componentDidMount() {
     this.fetch();
-
   }
 
-  fetch = () => {
+  fetch = (cb?: (data: any[]) => void) => {
     return getTopic(this.page).then(({ data }) => {
       const list: any[] = data.data || [];
 
-      if (this.page === 1) {
-        this.dataManager.set(list);
+      if (typeof cb === 'function') {
+        cb(list);
       } else {
-        this.dataManager.push(...list);
+        if (this.page === 1) {
+          this.dataManager.set(list);
+        } else {
+          this.dataManager.push(...list);
+        }
       }
 
       if (list.length) {
@@ -87,24 +89,16 @@ export default class List extends Taro.Component<any, ColumnListState> {
     }
 
     this.loadStatus = 'loadMore';
-    this.dataManager.setLoadStatus({
-      type: 'loadMore'
-    });
+    const { clearAndAddData } = this.dataManager.setLoadStatus(
+      {
+        type: 'loadMore'
+      },
+      '140rpx'
+    );
 
-    const itemCount = this.dataManager.getItemCount();
-
-    this.dataManager.updateConfig({
-      itemSize: index => {
-        return index === itemCount - 1 ? '140rpx' : HEIGHT;
-      }
-    });
-
-    this.fetch().then(() => {
-      this.dataManager.clearAllLoadStatus();
+    this.fetch(list => {
+      clearAndAddData(...list);
       this.loadStatus = 'none';
-      this.dataManager.updateConfig({
-        itemSize: HEIGHT
-      });
     });
   };
 

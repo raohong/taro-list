@@ -31,28 +31,35 @@ export default class List extends Taro.Component<any, ListState> {
 
   loadStatus: LoadStatus = 'none';
 
-  dataManager = new VirutalListDataManager({
-    itemSize: '240rpx',
-    overscan: 5,
-    onChange: data => {
-      this.setState({
-        list: data
-      });
-    }
-  }, Taro);
+  dataManager = new VirutalListDataManager(
+    {
+      itemSize: '240rpx',
+      overscan: 5,
+      onChange: data => {
+        this.setState({
+          list: data
+        });
+      }
+    },
+    Taro
+  );
 
   componentDidMount() {
     this.fetch();
   }
 
-  fetch = () => {
+  fetch = (cb?: (data: any[]) => void) => {
     return getTopic(this.page).then(({ data }) => {
       const list: any[] = data.data || [];
 
-      if (this.page === 1) {
-        this.dataManager.set(list);
+      if (typeof cb === 'function') {
+        cb(list);
       } else {
-        this.dataManager.push(...list);
+        if (this.page === 1) {
+          this.dataManager.set(list);
+        } else {
+          this.dataManager.push(...list);
+        }
       }
 
       if (list.length) {
@@ -70,7 +77,6 @@ export default class List extends Taro.Component<any, ListState> {
       }
     });
   };
-
   handleLoadMore = () => {
     // 这里假设加载完毕就不能再次加载了
     if (this.loadStatus !== 'none') {
@@ -78,24 +84,16 @@ export default class List extends Taro.Component<any, ListState> {
     }
 
     this.loadStatus = 'loadMore';
-    this.dataManager.setLoadStatus({
-      type: 'loadMore'
-    });
+    const { clearAndAddData } = this.dataManager.setLoadStatus(
+      {
+        type: 'loadMore'
+      },
+      '140rpx'
+    );
 
-    const length = this.dataManager.get().length;
-
-    this.dataManager.updateConfig({
-      itemSize: index => {
-        return index === length - 1 ? '140rpx' : '240rpx';
-      }
-    });
-
-    this.fetch().then(() => {
-      this.dataManager.clearAllLoadStatus();
+    this.fetch(list => {
+      clearAndAddData(...list);
       this.loadStatus = 'none';
-      this.dataManager.updateConfig({
-        itemSize: '240rpx'
-      });
     });
   };
 

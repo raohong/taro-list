@@ -1,7 +1,7 @@
 {
 	"miniprogramRoot": "dist/",
-	"projectname": "taro-virtual-list",
-	"description": "taro-virtual-list",
+	"projectname": "taro-list",
+	"description": "taro-list",
 	"appid": "wx8e4c4bc2c1675e7d",
 	"setting": {
 		"urlCheck": false,

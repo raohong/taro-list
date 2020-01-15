@@ -10,7 +10,7 @@ npm i taro-list-data-manager
 
 ```
 
-[h5 demo](https://raohong.github.io/taro-list/dist/index.html)
+[h5 demo](https://raohong.github.io/taro-list-demo/dist/index.html)
 
 1. 配置文件里添加
 

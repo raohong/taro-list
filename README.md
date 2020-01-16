@@ -12,6 +12,10 @@ npm i taro-list-data-manager
 
 [h5 demo](https://raohong.github.io/taro-list-demo/dist/index.html)
 
+小程序 demo
+
+![小程序 demo](https://i.loli.net/2020/01/16/Q4d1eZDXbfnv93y.jpg)
+
 1. 配置文件里添加
 
 ```

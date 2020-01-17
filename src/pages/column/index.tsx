@@ -136,7 +136,7 @@ export default class List extends Taro.Component<any, ColumnListState> {
       <View className='page column-page'>
         <TaroList
           onRefresh={this.handleRefresh}
-          onLoadmore={this.handleLoadMore}
+          onLoadMore={this.handleLoadMore}
           virtual
           height='100vh'
           dataManager={this.dataManager}

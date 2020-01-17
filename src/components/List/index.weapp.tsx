@@ -96,10 +96,10 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
   }
 
   private handleScrollToLower = () => {
-    const { onLoadmore } = this.props;
+    const { onLoadMore } = this.props;
 
-    if (typeof onLoadmore === 'function') {
-      onLoadmore();
+    if (typeof onLoadMore === 'function') {
+      onLoadMore();
     }
   };
 

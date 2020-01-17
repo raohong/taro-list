@@ -22,7 +22,7 @@ export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   damping?: number;
   refreshing?: boolean;
   onRefresh?: (cb: () => void) => void;
-  onLoadmore?: () => void;
+  onLoadMore?: () => void;
   custom?: boolean;
   virtual?: boolean;
   enableBackToTop?: boolean;
@@ -40,7 +40,7 @@ export const ListPropTypes: React.WeakValidationMap<ListProps> = {
   className: PropTypes.string,
   style: PropTypes.object,
   onRefresh: PropTypes.func,
-  onLoadmore: PropTypes.func,
+  onLoadMore: PropTypes.func,
   showRefreshText: PropTypes.bool,
   custom: PropTypes.bool,
   scrollToIndex: PropTypes.number,

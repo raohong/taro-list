@@ -38,7 +38,7 @@ export interface TaroListProps {
   damping?: number;
   refreshing?: boolean;
   onRefresh?: (cb: () => void) => void;
-  onLoadmore?: () => void;
+  onLoadMore?: () => void;
   custom?: boolean;
   virtual?: boolean;
   enableBackToTop?: boolean;

@@ -1,10 +1,10 @@
 import Taro from '@tarojs/taro';
-import { View, Image } from '@tarojs/components';
+import { View } from '@tarojs/components';
 import {
   VirutalListDataManager,
   VirutalListItemData
 } from 'taro-list-data-manager';
-import TaroList from '../../components/List/index';
+import TaroList from '../../components/List';
 import './index.less';
 
 function getTopic(page: number) {
@@ -21,7 +21,15 @@ interface ListState {
   list: VirutalListItemData[];
 }
 
-type LoadStatus = 'none' | 'loadMore' | 'ended' | 'loading' | 'refreshing';
+const HEIGHT = '240rpx';
+
+type LoadStatus =
+  | 'none'
+  | 'loadMore'
+  | 'ended'
+  | 'noData'
+  | 'loading'
+  | 'refreshing';
 
 export default class List extends Taro.Component<any, ListState> {
   page = 1;
@@ -33,8 +41,10 @@ export default class List extends Taro.Component<any, ListState> {
 
   dataManager = new VirutalListDataManager(
     {
-      itemSize: '240rpx',
+      itemSize: HEIGHT,
       overscan: 5,
+      // estimatedSize 尽可能接近真实尺寸
+      estimatedSize: 70,
       onChange: data => {
         this.setState({
           list: data
@@ -44,39 +54,75 @@ export default class List extends Taro.Component<any, ListState> {
     Taro
   );
 
-  componentDidMount() {
-    this.fetch();
-  }
+  count = 0;
 
-  fetch = (cb?: (data: any[]) => void) => {
-    return getTopic(this.page).then(({ data }) => {
-      const list: any[] = data.data || [];
+  handleInit = () => {
+    this.loadStatus = 'loading';
 
-      if (typeof cb === 'function') {
-        cb(list);
+    this.dataManager.setLoadStatus(
+      {
+        type: 'loading'
+      },
+      '140rpx'
+    );
+
+    this.refresh();
+  };
+
+  refresh = () => {
+    this.count = 0;
+
+    return this.fetch().then(({ list, status }) => {
+      // 请求结束后 清空所有加载状态 复原 itemSize
+      this.dataManager.clearAllLoadStatus();
+      this.dataManager.updateConfig({
+        itemSize: HEIGHT
+      });
+
+      if (status !== 'none') {
+        this.dataManager.clear();
+        this.dataManager.setLoadStatus({ type: status }, '140rpx');
       } else {
-        if (this.page === 1) {
-          this.dataManager.set(list);
-        } else {
-          this.dataManager.push(...list);
-        }
+        console.log('set');
+        this.dataManager.set(list);
       }
 
-      if (list.length) {
-        this.page += 1;
-      } else {
-        const total = this.dataManager.get().length;
-
-        this.dataManager.updateConfig({
-          itemSize: index => (index === total - 1 ? '140rpx' : '240rpx')
-        });
-        this.dataManager.setLoadStatus({
-          type: 'ended'
-        });
-        // 没有更多了
-      }
+      this.loadStatus = status;
     });
   };
+
+  fetch = (): Promise<{
+    list: any[];
+    status: 'noData' | 'ended' | 'none';
+  }> => {
+    return new Promise((resolve, reject) => {
+      getTopic(this.page)
+        .then(({ data }) => {
+          this.count++;
+          const list: any[] = data.data || [];
+          // 这里模仿数据记载完
+          if (this.count === 10) {
+            list.length = 0;
+          }
+
+          if (list.length) {
+            this.page++;
+          }
+
+          resolve({
+            list,
+            status:
+              list.length === 0
+                ? this.page === 1
+                  ? 'noData'
+                  : 'ended'
+                : 'none'
+          });
+        })
+        .catch(reject);
+    });
+  };
+
   handleLoadMore = () => {
     // 这里假设加载完毕就不能再次加载了
     if (this.loadStatus !== 'none') {
@@ -91,31 +137,39 @@ export default class List extends Taro.Component<any, ListState> {
       '140rpx'
     );
 
-    this.fetch(list => {
+    this.fetch().then(({ list, status }) => {
+      this.loadStatus = status;
       clearAndAddData(...list);
-      this.loadStatus = 'none';
+
+      if (status !== 'none') {
+        this.dataManager.setLoadStatus(
+          {
+            type: 'ended'
+          },
+          '140rpx'
+        );
+      }
     });
   };
 
   handleRefresh = cb => {
-    if (this.loadStatus == 'refreshing') {
+    if (this.loadStatus !== 'none') {
       return;
     }
 
     this.page = 1;
     this.loadStatus = 'refreshing';
+
+    // 刷新时 清空所有加载状态 复原 itemSize
     this.dataManager.clearAllLoadStatus();
+    this.dataManager.updateConfig({
+      itemSize: HEIGHT
+    });
 
-    this.fetch()
+    this.refresh()
       .then(cb)
-      .then(() => {
-        this.dataManager.updateConfig({
-          itemSize: '240rpx'
-        });
-        this.loadStatus = 'none';
-      });
+      .catch(cb);
   };
-
   render() {
     const { list } = this.state;
 
@@ -130,6 +184,7 @@ export default class List extends Taro.Component<any, ListState> {
         <TaroList
           onRefresh={this.handleRefresh}
           onLoadMore={this.handleLoadMore}
+          onVirtualListInit={this.handleInit}
           virtual
           height='100vh'
           dataManager={this.dataManager}
@@ -142,6 +197,10 @@ export default class List extends Taro.Component<any, ListState> {
             ) : item.item.type === 'ended' ? (
               <View className='loadStatus' style={item.style}>
                 没有更多了
+              </View>
+            ) : item.item.type === 'loading' ? (
+              <View className='loadStatus' style={item.style}>
+                加载中...
               </View>
             ) : (
               <View

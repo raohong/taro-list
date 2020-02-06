@@ -4,7 +4,7 @@ import {
   VirutalListDataManager,
   VirutalListItemData
 } from 'taro-list-data-manager';
-import TaroList from '../../components/List/index';
+import TaroList from '../../components/List';
 
 import './index.less';
 
@@ -20,14 +20,17 @@ export default class List extends Taro.Component<any, NormalListState> {
     scrollToIndex: undefined
   };
 
-  dataManager = new VirutalListDataManager<number>({
-    itemSize: 50,
-    onChange: data => {
-      this.setState({
-        list: data
-      });
-    }
-  }, Taro);
+  dataManager = new VirutalListDataManager<number>(
+    {
+      itemSize: 50,
+      onChange: data => {
+        this.setState({
+          list: data
+        });
+      }
+    },
+    Taro
+  );
   componentWillMount() {
     for (let i = 0; i < 10; i++) {
       this.add(i * 200);

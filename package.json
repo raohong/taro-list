@@ -1,6 +1,6 @@
 {
   "name": "taro-list",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "基于 Taro 的列表刷新组件, 支持下拉刷新, 上拉加载, 虚拟列表",
   "main": "dist/index.js",
   "main:h5": "dist/h5/index.js",

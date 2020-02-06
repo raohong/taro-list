@@ -83,7 +83,6 @@ export default class List extends Taro.Component<any, ListState> {
         this.dataManager.clear();
         this.dataManager.setLoadStatus({ type: status }, '140rpx');
       } else {
-        console.log('set');
         this.dataManager.set(list);
       }
 

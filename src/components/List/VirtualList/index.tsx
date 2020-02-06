@@ -200,7 +200,6 @@ export class VirtualList extends PureComponent<VirtualListProps> {
       currentOffset: this.offset,
       overscan: overscan!
     });
-    console.log('update', start, end, this.getContainerSize());
 
     if (start !== undefined && end !== undefined) {
       if (Array.isArray(stickyIndices) && column === 1) {

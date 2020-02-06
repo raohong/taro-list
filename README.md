@@ -68,6 +68,7 @@ export default Index() => {
 |       damping       |             number              |     200      | 否                      | 最大下拉距离                                  |
 |     refreshing      |             boolean             |              | 否                      | 是否处于刷新状态 （最大刷新时间 10s）         |
 |      onRefresh      | (onSuccess: () => void) => void |              | 否                      | 刷新回调函数，参数 onSuccess 调用结束刷新状态 |
+|  onVirtualListInit  |           () => void            |              | 否                      | 虚拟列表初始化回调                            |
 |     onLoadMore      |           () => void            |              | 否                      | 下拉加载更多回调函数                          |
 |   enableBackToTop   |             boolean             |              | 否                      | 参考 ScrollView enableBackToTop               |
 | scrollWithAnimation |             boolean             |              | 否                      | 参考 ScrollView scrollWithAnimation           |

@@ -48,6 +48,7 @@ export interface VirtualListProps {
   scrollDirection?: DIRECTION;
   scrollToIndex?: number;
   dataManager: VirutalListDataManager;
+  onVirtualListInit?: () => void;
   onOffsetChange: (scrollTop: number) => void;
 }
 
@@ -70,6 +71,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
   };
 
   static propTypes: React.WeakValidationMap<VirtualListProps> = {
+    onVirtualListInit: PropTypes.func,
     dataManager: PropTypes.instanceOf(VirutalListDataManager).isRequired
   };
 
@@ -78,6 +80,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
   private sizeAndPositionManager: SizeAndPositionManager;
   private needUpdate = true;
   private offset: number = 0;
+  private inited: boolean = false;
 
   componentDidMount() {
     const { dataManager } = this.props;
@@ -100,7 +103,8 @@ export class VirtualList extends PureComponent<VirtualListProps> {
       scrollToIndex,
       scrollDirection,
       onOffsetChange,
-      dataManager
+      dataManager,
+      onVirtualListInit
     } = this.props;
 
     const { itemCount } = dataManager.__getState();
@@ -117,7 +121,18 @@ export class VirtualList extends PureComponent<VirtualListProps> {
       }
     }
 
-    this.updateVirutalListDataRange();
+    // 因为小程序获取高度是异步的
+    if (
+      !this.inited &&
+      this.getContainerSize() > 0 &&
+      this.getContainerSize(prevProps) === 0
+    ) {
+      this.inited = true;
+
+      if (typeof onVirtualListInit === 'function') {
+        onVirtualListInit();
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -185,6 +200,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
       currentOffset: this.offset,
       overscan: overscan!
     });
+    console.log('update', start, end, this.getContainerSize());
 
     if (start !== undefined && end !== undefined) {
       if (Array.isArray(stickyIndices) && column === 1) {

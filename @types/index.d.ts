@@ -39,6 +39,7 @@ export interface TaroListProps {
   refreshing?: boolean;
   onRefresh?: (cb: () => void) => void;
   onLoadMore?: () => void;
+  onVirtualListInit?: () => void;
   custom?: boolean;
   virtual?: boolean;
   enableBackToTop?: boolean;

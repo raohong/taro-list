@@ -45,5 +45,6 @@ export const ListPropTypes: React.WeakValidationMap<ListProps> = {
   custom: PropTypes.bool,
   scrollToIndex: PropTypes.number,
   disabled: PropTypes.bool,
-  dataManager: PropTypes.instanceOf(VirutalListDataManager)
+  dataManager: PropTypes.instanceOf(VirutalListDataManager),
+  onInit: PropTypes.func
 };

@@ -154,7 +154,8 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
       scrollWithAnimation,
       enableBackToTop,
       dataManager,
-      disabled
+      disabled,
+      onVirtualListInit
     } = props;
     const { containerSize, scrollTop } = this.state;
 
@@ -215,6 +216,7 @@ export default class TaroList extends PureComponent<ListProps, ListWeappState> {
                 scrollToIndex={scrollToIndex}
                 onOffsetChange={this.onScrollOffsetChange}
                 dataManager={dataManager}
+                onVirtualListInit={onVirtualListInit}
               >
                 {props.children}
               </VirtualList>

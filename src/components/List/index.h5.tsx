@@ -277,6 +277,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       scrollWithAnimation,
       dataManager,
       showRefreshText
+      onVirtualListInit,
     } = props;
     const { draging, status, offset, containerSize } = this.state;
 
@@ -338,6 +339,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
                   dataManager={dataManager}
                   scrollToIndex={scrollToIndex}
                   onOffsetChange={this.onScrollOffsetChange}
+                  onVirtualListInit={onVirtualListInit}
                 >
                   {props.children}
                 </VirtualList>

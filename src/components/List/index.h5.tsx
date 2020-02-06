@@ -276,8 +276,8 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       enableBackToTop,
       scrollWithAnimation,
       dataManager,
-      showRefreshText
-      onVirtualListInit,
+      showRefreshText,
+      onVirtualListInit
     } = props;
     const { draging, status, offset, containerSize } = this.state;
 

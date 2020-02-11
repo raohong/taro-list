@@ -6,7 +6,6 @@
 
 ```
 npm i taro-list
-npm i taro-list-data-manager
 
 ```
 

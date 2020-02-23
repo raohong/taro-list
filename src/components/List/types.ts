@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { VirutalListDataManager } from 'taro-list-data-manager';
+import { VirtualListDataManager } from 'taro-list-data-manager';
 import { VirtualListProps } from './VirtualList';
 
 export type ExcludeProps =
@@ -29,7 +29,7 @@ export interface ListProps extends Omit<VirtualListProps, ExcludeProps> {
   scrollWithAnimation?: boolean;
   disabled?: boolean;
   showRefreshText?: boolean;
-  dataManager?: VirutalListDataManager;
+  dataManager?: VirtualListDataManager;
 }
 
 export const ListPropTypes: React.WeakValidationMap<ListProps> = {
@@ -45,6 +45,6 @@ export const ListPropTypes: React.WeakValidationMap<ListProps> = {
   custom: PropTypes.bool,
   scrollToIndex: PropTypes.number,
   disabled: PropTypes.bool,
-  dataManager: PropTypes.instanceOf(VirutalListDataManager),
+  dataManager: PropTypes.instanceOf(VirtualListDataManager),
   onVirtualListInit: PropTypes.func
 };

@@ -7,6 +7,6 @@ export interface VirtualListContext {
   dynamic: boolean;
 }
 
-export const VirutalListContext = createContext<VirtualListContext>(
+export const VirtualListContext = createContext<VirtualListContext>(
   {} as VirtualListContext
 );

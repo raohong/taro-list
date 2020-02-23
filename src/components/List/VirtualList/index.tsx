@@ -2,9 +2,9 @@ import Taro, { PureComponent } from '@tarojs/taro';
 import PropTypes from 'prop-types';
 import { View } from '@tarojs/components';
 import {
-  VirutalListDataManager,
-  VirutalListItemData,
-  VirutalListDataManagerState
+  VirtualListDataManager,
+  VirtualListItemData,
+  VirtualListDataManagerState
 } from 'taro-list-data-manager';
 
 import {
@@ -47,7 +47,7 @@ export interface VirtualListProps {
   align?: ALIGN;
   scrollDirection?: DIRECTION;
   scrollToIndex?: number;
-  dataManager: VirutalListDataManager;
+  dataManager: VirtualListDataManager;
   onVirtualListInit?: () => void;
   onOffsetChange: (scrollTop: number) => void;
 }
@@ -72,7 +72,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
 
   static propTypes: React.WeakValidationMap<VirtualListProps> = {
     onVirtualListInit: PropTypes.func,
-    dataManager: PropTypes.instanceOf(VirutalListDataManager).isRequired
+    dataManager: PropTypes.instanceOf(VirtualListDataManager).isRequired
   };
 
   private delayUpdateTimer: number | null = null;
@@ -143,7 +143,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     this.props.dataManager.destroy();
   }
 
-  updateVirutalListDataRange = () => {
+  updateVirtualListDataRange = () => {
     if (!this.needUpdate) {
       return;
     }
@@ -156,11 +156,11 @@ export class VirtualList extends PureComponent<VirtualListProps> {
     if (this.offset !== scrollOffset) {
       this.offset = scrollOffset;
       this.needUpdate = true;
-      this.updateVirutalListDataRange();
+      this.updateVirtualListDataRange();
     }
   };
 
-  private onStateChange = (prevState: VirutalListDataManagerState<any>) => {
+  private onStateChange = (prevState: VirtualListDataManagerState<any>) => {
     const {
       itemSize,
       itemCount,
@@ -188,7 +188,7 @@ export class VirtualList extends PureComponent<VirtualListProps> {
   };
 
   private update = (data: any[]) => {
-    const items: VirutalListItemData[] = [];
+    const items: VirtualListItemData[] = [];
     const {
       overscan,
       stickyIndices,

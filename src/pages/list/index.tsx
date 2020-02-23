@@ -1,8 +1,8 @@
 import Taro from '@tarojs/taro';
 import { View } from '@tarojs/components';
 import {
-  VirutalListDataManager,
-  VirutalListItemData
+  VirtualListDataManager,
+  VirtualListItemData
 } from 'taro-list-data-manager';
 import TaroList from '../../components/List';
 import './index.less';
@@ -18,7 +18,7 @@ function getTopic(page: number) {
 }
 
 interface ListState {
-  list: VirutalListItemData[];
+  list: VirtualListItemData[];
 }
 
 const HEIGHT = '240rpx';
@@ -39,7 +39,7 @@ export default class List extends Taro.Component<any, ListState> {
 
   loadStatus: LoadStatus = 'none';
 
-  dataManager = new VirutalListDataManager(
+  dataManager = new VirtualListDataManager(
     {
       itemSize: HEIGHT,
       overscan: 5,

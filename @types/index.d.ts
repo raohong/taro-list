@@ -1,4 +1,4 @@
-import { VirutalListDataManager } from 'taro-list-data-manager';
+import { VirtualListDataManager } from 'taro-list-data-manager';
 
 export enum ALIGN {
   START = 'start',
@@ -47,7 +47,7 @@ export interface TaroListProps {
   disabled?: boolean;
   align?: ALIGN;
   scrollToIndex?: number;
-  dataManager: VirutalListDataManager;
+  dataManager: VirtualListDataManager;
   showRefreshText?: boolean;
 }
 

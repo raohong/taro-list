@@ -46,6 +46,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   private refreshTimer: number = 0;
   private initialY = 0;
   private virtualListRef = Taro.createRef<VirtualList>();
+  private down = false;
 
   private domId = `zyouh-list__id-${TaroList.index++}`;
 
@@ -109,15 +110,28 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   };
 
   private handleTouchStart = (evt: TouchEvent) => {
+    const touchList = evt.touches;
+
     if (this.state.status === REFRESH_STATUS.RELEASE) {
       this.cancelEvent(evt);
       return;
+    } else if (!this.down && touchList.length === 1 && this.checkShouldPull()) {
+      this.setState({
+        draging: true
+      });
+
+      this.down = true;
+      this.initialY = touchList[0].clientY;
     }
   };
 
   private handleTouchMove = (evt: TouchEvent) => {
+    if (evt.touches.length > 1 || !this.down) {
+      return;
+    }
+
     const y = evt.touches[0].clientY;
-    const { status, draging, offset } = this.state;
+    const { status, offset } = this.state;
 
     if (status === REFRESH_STATUS.RELEASE) {
       this.cancelEvent(evt);
@@ -129,18 +143,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
       return;
     }
 
-    if (this.checkIsInScrolling()) {
-      return;
-    }
-
     this.cancelEvent(evt);
-
-    if (!draging) {
-      this.setState({
-        draging: true
-      });
-      this.initialY = y;
-    }
 
     const deltaY = this.damping(y - this.initialY);
 
@@ -163,6 +166,9 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
 
   private handleTouchEnd = () => {
     const { status, draging } = this.state;
+
+    this.down = false;
+
     if (status === REFRESH_STATUS.RELEASE) {
       return;
     }
@@ -379,8 +385,8 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     this.rootNode = document.querySelector('#' + this.domId) as HTMLDivElement;
   }
 
-  private checkIsInScrolling() {
-    return this.getScrollOffset() > 0;
+  private checkShouldPull() {
+    return this.getScrollOffset() >= 0 && this.getScrollOffset() < 1;
   }
 
   private getScrollOffset() {

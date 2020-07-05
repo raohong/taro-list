@@ -16,7 +16,10 @@ function exec() {
   const fromBase = path.join(root, 'src/components/List');
   const toBase = path.join(root, 'dist/weapp/components/List');
 
-  fs.mkdirSync(path.join(toBase, 'lodash.throttle'));
+  if (!fs.existsSync(path.join(toBase, 'lodash.throttle'))) {
+    fs.mkdirSync(path.join(toBase, 'lodash.throttle'));
+  }
+
   deleteFiles.forEach(f => fs.unlinkSync(path.join(toBase, f)));
   files.forEach(f =>
     fs.copyFileSync(path.join(fromBase, f), path.join(toBase, f))
@@ -35,7 +38,6 @@ function exec() {
     root,
     'dist/weapp/components/List/index.weapp.tsx'
   );
-
 
   fs.renameSync(weappIndex, weappIndex.replace('.weapp', ''));
 

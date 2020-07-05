@@ -11,7 +11,7 @@
     "css": "less"
   },
   "scripts": {
-    "build": "cross-env TARO_BUILD_TYPE=ui taro build --ui & node ./scripts/build.js && rm dist/sitemap*.json",
+    "build": "cross-env TARO_BUILD_TYPE=ui taro build --ui & node ./scripts/build.js",
     "prettier": "prettier --config .prettierrc --write \"./{src,tests}/**/*.{less,ts,tsx,js}\" \"!./{build.dist}/**\"",
     "lint-staged": "lint-staged",
     "build:weapp": "taro build --type weapp",

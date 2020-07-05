@@ -9,3 +9,8 @@ src
 .prettierrc
 global.d.ts
 tsconfig.json
+app.js
+dist/app.json
+dist/app.js
+dist/app.wxss
+dist/project.config.json

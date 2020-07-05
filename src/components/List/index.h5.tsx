@@ -126,7 +126,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
   };
 
   private handleTouchMove = (evt: TouchEvent) => {
-    if (evt.touches.length > 1 || !this.down) {
+    if (evt.touches.length > 1 || !this.down || this.props.disabled) {
       return;
     }
 
@@ -139,7 +139,7 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
     }
 
     // 如果 offset 大于0 处于拖动中或者好 release
-    if ((y < this.initialY && offset < 1) || this.props.disabled) {
+    if (y < this.initialY && offset < 1) {
       return;
     }
 
@@ -245,7 +245,6 @@ export default class TaroList extends PureComponent<ListProps, ListState> {
 
   private cancelEvent = (evt: UIEvent) => {
     evt.preventDefault();
-    evt.stopPropagation();
   };
 
   private clearRefreshTimer = () => {
